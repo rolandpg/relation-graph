@@ -1,0 +1,1285 @@
+
+.relation-graph {
+    box-sizing: border-box;
+    position: relative;
+    min-width: 200px;
+    min-height: 200px;
+    --editor-main-color: rgb(64, 165, 248);
+    --editor-light-color: rgb(125, 192, 248);
+    --editor-light2-color: rgb(168, 212, 248);
+    --editor-light-opacity: rgba(57, 144, 216, 0.1);
+    // Graph Items Default Style
+    --rg-node-opacity: 1;
+    --rg-node-font-size: 1rem;
+    --rg-node-font-color: #000000;
+    --rg-node-color: #eeeeee;
+    --rg-node-border-color: #333333;
+    --rg-node-border-width: 1px;
+    --rg-node-border-radius: 3px;
+    --rg-node-width: fit-content;
+    --rg-node-height: fit-content;
+    --rg-node-text-px: 10px;
+    --rg-node-text-py: 3px;
+    --rg-background-color: transparent;
+    --rg-line-color: #888888;
+    --rg-line-width: 1px;
+    --rg-line-fontcolor: var(--rg-line-color, #666666);
+    --rg-line-fontsize: 12px;
+    --rg-line-opacity: 1;
+    // Graph Checked Items Default Style
+    //--rg-checked-item-bg-color: rgba(151,150,150,0.3);
+    --rg-checked-item-bg-color: rgba(150, 150, 150, 0.2); // 它受到 graphOptions.checkedItemBackgroundColor 的影响
+    --rg-checked-line-text-bg-color: rgb(234, 232, 232);
+    &:focus {
+        outline: none;
+    }
+
+    /*****************************[graph]****************************************/
+    .rg-graph-plugs {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        z-index: 90;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        user-select: none;
+
+        .rg-view-slot {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    .rg-watermark {
+        position: absolute;
+        --watermark-width: 200px;
+        --watermark-height: 100px;
+        z-index: 1200;
+        overflow: visible;
+        min-height: 100px;
+        min-width: 100px;
+        width: var(--watermark-width);
+        height: var(--watermark-height);
+        box-sizing: border-box;
+
+        div {
+            box-sizing: border-box;
+        }
+    }
+
+    .rg-watermark.rg-watermark-top {
+        left: calc((100% - var(--watermark-width)) / 2);
+        top: 10px;
+    }
+
+    .rg-watermark.rg-watermark-bottom {
+        left: calc((100% - var(--watermark-width)) / 2);
+        bottom: 10px;
+    }
+
+    .rg-watermark.rg-watermark-left {
+        left: 10px;
+        top: calc((100% - var(--watermark-height)) / 2);
+    }
+
+    .rg-watermark.rg-watermark-right {
+        right: 10px;
+        top: calc((100% - var(--watermark-height)) / 2);
+    }
+
+    .rg-watermark.rg-watermark-tl {
+        left: 10px;
+        top: 10px;
+    }
+
+    .rg-watermark.rg-watermark-tr {
+        right: 10px;
+        top: 10px;
+    }
+
+    .rg-watermark.rg-watermark-bl {
+        left: 10px;
+        bottom: 10px;
+    }
+
+    .rg-watermark.rg-watermark-br {
+        right: 10px;
+        bottom: 10px;
+    }
+
+    .rg-lines-container svg {
+        overflow: visible
+    }
+
+    .rg-lines-svg {
+        overflow: visible;
+        width: 10px;
+        height: 10px;
+        position: absolute;
+        left: 0px;
+        top: 0px;
+    }
+
+    .rg-lines-container {
+        /*user-select: none;*/
+        overflow: visible;
+        position: absolute;
+        z-index: 40;
+        width: 100%;
+        top: 0px;
+        left: 0px;
+        pointer-events: none;
+    }
+
+    .rg-lines-container-el-lines {
+        z-index: 80;
+        pointer-events: none;
+
+        .rg-line-bg {
+            pointer-events: stroke;
+        }
+
+        .rg-line-text {
+            pointer-events: all;
+        }
+    }
+
+    .rg-lines-svg-el-lines {
+        overflow: visible;
+        width: 10px;
+        height: 10px;
+        position: absolute;
+        left: 0px;
+        top: 0px;
+    }
+
+    /*****************************[canvas]****************************************/
+    .rg-nodes-container-wrapper {
+        position: absolute;
+        width: 100%;
+        top: 0px;
+        left: 0px;
+        z-index: 50;
+    }
+    .rg-nodes-container {
+        position: relative;
+        overflow: visible;
+    }
+
+    .rg-map {
+        background-color: var(--rg-background-color);
+        overflow: hidden;
+        cursor: default;
+        user-select: none;
+        touch-action: none;
+        opacity: 0.01;
+        transition: none;
+        width: 100%;
+        height: 100%;
+        position: relative;
+        //width: fit-content;
+        //height: fit-content;
+    }
+    .rg-map-background {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+    &.rg-move-mode {
+        .rg-map {
+            cursor: grab;
+        }
+    }
+
+    .rg-map-ready {
+        opacity: 1;
+        transition: opacity 0.5s ease;
+        will-change: opacity;
+    }
+
+    .rg-map-background-norepeat {
+        background-repeat: no-repeat;
+        background-position: right bottom;
+    }
+
+    .rg-map-canvas {
+        position: relative;
+        user-select: none;
+        pointer-events: none;
+        top: 0;
+        left: 0;
+        border: none;
+        z-index: 3;
+        overflow: visible;
+        white-space: nowrap;
+        transform-origin: 0 0;
+        will-change: transform;
+
+        .rg-events-all {
+            pointer-events: all;
+        }
+    }
+
+    &.rg-enable-node-xy-animation {
+        .rg-node-peel {
+            transition: transform 150ms ease;
+        }
+
+        .rg-line-peel {
+            //opacity: 0;
+            transition: none; // 我想要让 opacity 从 0 到 1 的变化有一个过渡效果，但变为 0 时没有过渡效果
+        }
+    }
+
+    &.rg-enable-canvas-animation {
+        .rg-map-canvas {
+            transition: transform 0.5s ease;
+        }
+
+        .rg-editing-ctrl, .rg-editing-line-ctrl, .rg-editing-connect-ctrl {
+            opacity: 0;
+        }
+    }
+
+    .rg-canvas-behind {
+        z-index: 2;
+        position: absolute;
+    }
+
+    .rg-canvas-above {
+        z-index: 5;
+        position: absolute;
+    }
+
+    .rg-canvas-slot {
+        overflow: visible;
+        position: absolute;
+        margin-top: 0px;
+        margin-left: 0px;
+    }
+
+    .rg-canvas-slot-behind {
+        z-index: 30;
+        overflow: visible;
+    }
+
+    .rg-canvas-slot-above {
+        z-index: 70;
+        overflow: visible;
+    }
+
+    .rg-single-graph {
+        position: relative;
+        overflow: visible;
+    }
+
+    .rg-map {
+        img {
+            -webkit-user-drag: none;
+            -webkit-user-select: none;
+        }
+    }
+
+    /*****************************[line]****************************************/
+    .rg-line-text {
+        fill: var(--rg-line-fontcolor, #888888);
+        font-size: var(--rg-line-fontsize);
+        paint-order: stroke;
+        pointer-events: all;
+    }
+
+    .rg-line-text.rg-line-text-on-path {
+        //dy: -10px;
+    }
+
+    .rg-linetext-container {
+        position: absolute;
+        pointer-events: none;
+        user-select: none;
+        overflow: visible;
+        left: 0;
+        top: 0;
+        z-index: 45;
+        display: block;
+
+        .rg-line-peel {
+            width: fit-content;
+            .rg-line-label-on-path {
+                --rg-line-text-bg-color: #ffffff;
+            }
+            .rg-line-label {
+                display: block;
+                color: var(--rg-line-fontcolor, #888888);
+                font-size: var(--rg-line-fontsize);
+                transform-origin: 0 0;
+                position: absolute;
+                user-select: none;
+                pointer-events: all;
+                box-sizing: border-box;
+                padding: 2px 6px;
+                border-radius: 5px;
+                white-space: nowrap;
+                background-color: var(--rg-line-text-bg-color);
+            }
+        }
+
+        .rg-line-checked {
+            .rg-line-label {
+                //-webkit-text-stroke-width: 1px;
+                //-webkit-text-stroke-color: var(--rg-checked-item-bg-color);
+                background-color: var(--rg-checked-line-text-bg-color);
+                color: #0f172a;
+            }
+        }
+        .rg-line-selected {
+
+        }
+    }
+
+    .rg-line-peel {
+        pointer-events: none;
+        cursor: default;
+        transition: opacity 200ms ease-in; // 我想要让 opacity 从 0 到 1 的变化有一个过渡效果，但变为 0 时没有过渡效果
+        opacity: var(--rg-line-opacity, 1);
+    }
+
+    .rg-line {
+        //z-index: 1000;
+        fill-rule: nonzero;
+        stroke-linecap: round;
+        stroke: var(--rg-line-color);
+        stroke-width: var(--rg-line-width);
+        pointer-events: none;
+        fill: none;
+        marker-end: var(--rg-line-marker-end);
+        marker-start: var(--rg-line-marker-start);
+    }
+
+    .rg-line-bg {
+        stroke: #ffffff;
+        opacity: 0.01;
+        fill: none;
+        fill-rule: nonzero;
+        stroke-linecap: round;
+        pointer-events: stroke;
+        stroke-width: calc(var(--rg-line-width) + 6px);
+
+        &:hover {
+            opacity: 0.7;
+            stroke: var(--rg-checked-item-bg-color);
+        }
+    }
+
+    .rg-line-checked {
+        .rg-line-bg {
+            stroke: var(--rg-checked-item-bg-color);
+            opacity: 1;
+        }
+
+        .rg-line {
+            z-index: 100;
+        }
+
+        .rg-line-text {
+            stroke: var(--rg-checked-item-bg-color);
+            stroke-width: 2;
+        }
+    }
+
+    .rg-line-disable-events {
+        pointer-events: none !important;
+
+        .rg-line-bg, .rg-line-text {
+            pointer-events: none;
+        }
+    }
+
+    .rg-linetext-container {
+        .rg-line-disable-events {
+            .rg-line-bg, .rg-line-label {
+                pointer-events: none;
+            }
+        }
+    }
+
+    .rg-line-dashtype-1 {
+        stroke-dasharray: 2, 2, 2;
+        stroke-dashoffset: 3px;
+        stroke-linecap: butt;
+        stroke-linejoin: bevel;
+    }
+
+    .rg-line-dashtype-2 {
+        stroke-dasharray: 5, 5, 5;
+        stroke-dashoffset: 3px;
+        stroke-linecap: butt;
+        stroke-linejoin: bevel;
+    }
+
+    .rg-line-dashtype-3 {
+        stroke-dasharray: 9, 9, 9;
+        stroke-dashoffset: 3px;
+        stroke-linecap: butt;
+        stroke-linejoin: bevel;
+    }
+
+    .rg-line-dashtype-4 {
+        stroke-dasharray: 5, 5, 15;
+        stroke-dashoffset: 3px;
+        stroke-linecap: butt;
+        stroke-linejoin: bevel;
+    }
+
+    @keyframes ACTRGLineChecked {
+        0% {
+            stroke-dashoffset: 352px;
+            stroke-dasharray: 5, 5, 5;
+        }
+        50% {
+            stroke-dasharray: 5, 5, 5;
+            stroke-dashoffset: 3px;
+        }
+        100% {
+            stroke-dashoffset: 352px;
+            stroke-dasharray: 5, 5, 5;
+        }
+    }
+    @keyframes rg-line-anm1 {
+        0% {
+            stroke-dashoffset: 100px;
+            stroke-dasharray: 5, 5, 5;
+        }
+        100% {
+            stroke-dasharray: 5, 5, 5;
+            stroke-dashoffset: 3px;
+        }
+    }
+    @keyframes rg-line-anm2 {
+        from {
+            stroke-dashoffset: 0;
+            stroke-dasharray: 4, 4, 4;
+        }
+        to {
+            stroke-dashoffset: 10px;
+            stroke-dasharray: 20, 20, 20;
+        }
+    }
+    @keyframes rg-line-anm3 {
+        0% {
+            stroke-opacity: 1;
+        }
+        50% {
+            stroke-opacity: 0.2;
+        }
+        100% {
+            stroke-opacity: 1;
+        }
+    }
+    @keyframes rg-line-anm4 {
+        0% {
+            stroke-dasharray: 0, 100%;
+        }
+        100% {
+            stroke-dasharray: 100%, 0;
+        }
+    }
+
+    .rg-line-anm-1 {
+        animation: rg-line-anm1 10s infinite;
+        animation-fill-mode: forwards;
+        animation-timing-function: linear;
+    }
+
+    .rg-line-anm-2 {
+        animation: rg-line-anm2 3s infinite;
+    }
+
+    .rg-line-anm-3 {
+        animation: rg-line-anm3 1s infinite;
+    }
+
+    .rg-line-anm-4 {
+        animation: rg-line-anm4 3s infinite;
+    }
+
+    @keyframes deform1 {
+        from {
+            stroke-dashoffset: 0;
+        }
+        to {
+            stroke-dashoffset: 100%;
+        }
+    }
+
+    .rg-line-path {
+        /*stroke: url("#gradient");*/
+        /*mask: url("#line-mask");*/
+    }
+
+    /*****************************[node]****************************************/
+    .rg-icon {
+        width: 19px;
+        height: 19px;
+        vertical-align: 0px;
+        fill: currentColor;
+        overflow: hidden;
+    }
+
+    .rg-node-peel {
+        padding: 0;
+        position: absolute;
+        pointer-events: none;
+        box-sizing: border-box;
+        opacity: var(--rg-node-opacity);
+        z-index: var(--rg-node-z-index);
+        will-change: transform;
+        transform-origin: 0 0;
+        cursor: default;
+
+        .rg-node {
+            pointer-events: all;
+            text-align: center;
+            border-style: solid;
+            box-sizing: border-box;
+            overflow: visible;
+            transform-origin: 0 0;
+            font-size: var(--rg-node-font-size); // set on .rg-node-text
+            color: var(--rg-node-font-color);
+            background-color: var(--rg-node-color);
+            border-color: var(--rg-node-border-color);
+            border-width: var(--rg-node-border-width);
+            width: var(--rg-node-width);
+            height: var(--rg-node-height);
+        }
+    }
+
+    .rg-node-disable-events {
+        pointer-events: none;
+    }
+
+    .rg-node-shape-0 {
+        //border-radius: 50%;
+        & > .rg-node {
+            border-radius: 50%;
+        }
+    }
+
+    .rg-node-shape-1 {
+        //border-radius: var(--rg-node-border-radius, 3px);
+        & > .rg-node {
+            border-radius: var(--rg-node-border-radius);
+        }
+    }
+
+    .rg-node-checked {
+        z-index: 800;
+        //background-color: var(--rg-checked-item-bg-color);
+        & > .rg-node {
+            box-shadow: 0 0 0 4px var(--rg-checked-item-bg-color);
+        }
+    }
+
+    .rg-node-dragging {
+        //z-index: 9999;
+    }
+
+    .rg-node-selected {
+        //z-index: 9999;
+        //box-shadow: 0 0 0 1.5px var(--editor-main-color);
+        & > .rg-node {
+            box-shadow: 0 0 0 2px var(--editor-main-color);
+        }
+    }
+
+    img, svg, video, canvas, audio, iframe, embed, object {
+        display: unset;
+        vertical-align: unset;
+    }
+
+    .rg-node-text {
+        color: var(--rg-node-font-color);
+        font-size: var(--rg-node-font-size);
+        padding: var(--rg-node-text-py) var(--rg-node-text-px);
+        height: 100%;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+
+    .rg-node-shape-1 .rg-node-text {
+        //padding-left: 5px;
+        //padding-right: 5px;
+    }
+
+    .rg-node-type-button {
+        border-radius: 25px;
+        color: blue;
+        cursor: pointer;
+    }
+
+    .rg-node-hover {
+    }
+
+    .rg-node-resize {
+        //border: #025098 solid 2px;
+    }
+
+
+
+    @import "./relation-graph-rg-refer-line.scss";
+
+    @import "./relation-graph-rg-editing-line.scss";
+
+    .rg-editing-ctrl, .rg-editing-connect-ctrl {
+        user-select: none;
+        position: absolute;
+        z-index: 500;
+        box-shadow: 0 0 0 1px var(--editor-main-color);
+        border-radius: 0px;
+        pointer-events: none;
+        transform-origin: 0 0;
+    }
+
+    .rg-editing-ctrl.rg-ctrl-hide-border {
+        box-shadow: none;
+    }
+
+    .rg-editing-bar {
+        user-select: none;
+        pointer-events: none;
+        position: absolute;
+        border-radius: 5px;
+        padding: 3px;
+        box-sizing: border-box;
+        display: flex;
+        place-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 5px;
+
+        .rg-gee-icon {
+            background-color: rgba(214, 3, 246, 0.5);
+            pointer-events: auto;
+            min-width: 20px;
+            min-height: 20px;
+            border-radius: 5px;
+            box-sizing: border-box;
+            display: flex;
+            place-items: center;
+            justify-content: center;
+            cursor: pointer;
+
+            &:hover {
+                background-color: rgba(214, 3, 246, 1);
+                color: #ffffff;
+            }
+        }
+    }
+
+    .rg-connect-source-handle {
+        pointer-events: auto;
+        width: fit-content;
+        height: fit-content;
+    }
+
+    .rg-editing-bar-top {
+        width: fit-content;
+        height: fit-content;
+        left: 50%;
+        transform: translateX(-50%) translateY(-100%);
+        top: -15px;
+    }
+
+    .rg-editing-bar-bottom {
+        width: fit-content;
+        height: fit-content;
+        left: 50%;
+        transform: translateX(-50%) translateY(100%);
+        bottom: -15px;
+    }
+
+    .rg-editing-bar-left {
+        width: fit-content;
+        height: fit-content;
+        left: -15px;
+        top: 50%;
+        transform: translateX(-100%) translateY(-50%);
+    }
+
+    .rg-editing-bar-right {
+        width: fit-content;
+        height: fit-content;
+        right: -15px;
+        top: 50%;
+        transform: translateX(100%) translateY(-50%);
+    }
+
+    .rg-editing-bar-tl {
+        width: 30px;
+        height: 30px;
+        right: calc(100% + 10px);
+        top: -40px;
+    }
+
+    .rg-editing-bar-tr {
+        width: 30px;
+        height: 30px;
+        left: calc(100% + 10px);
+        top: -40px;
+    }
+
+    .rg-editing-bar-bl {
+        width: 30px;
+        height: 30px;
+        right: calc(100% + 10px);
+        bottom: -40px;
+    }
+
+    .rg-editing-bar-br {
+        width: 30px;
+        height: 30px;
+        left: calc(100% + 10px);
+        bottom: -40px;
+    }
+
+    @import "./relation-graph-rg-resize.scss";
+
+    .rg-editing-connect-ctrl {
+        position: absolute;
+        user-select: none;
+        pointer-events: none;
+        left: 0;
+        top:0;
+        z-index: 1400;
+        --hander-border-radius: 5px;
+        border-radius: var(--hander-border-radius);
+        --border-handler-width: 8px;
+        --hv-handler-width: 10px;
+        --center-handler-width: 10px;
+        --border-point-width: 10px;
+        --border-point-height: 10px;
+        --hander-color: var(--editor-light2-color);
+        --hander-border-color: var(--editor-main-color);
+        --hander-shadow-color: rgba(57, 144, 216, 0.1);
+        box-shadow: 0 0 0 var(--border-handler-width) var(--hander-shadow-color);
+    }
+
+    .rg-connect-ctl {
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        user-select: none;
+        border: none;
+        position: relative;
+    }
+
+    .rg-connect-ctl-handler {
+        pointer-events: auto;
+        user-select: none;
+        z-index: 20;
+        cursor: crosshair;
+        //cursor: crosshair;
+    }
+
+    .rg-connect-target {
+        pointer-events: auto;
+        //&:hover {
+        //    background-color: #fbe691;
+        //}
+    }
+
+    .rg-connect-ctl-handler-style {
+        background-color: var(--hander-color);
+        border: var(--hander-border-color) solid 1px;
+        position: absolute;
+        border-radius: 3px;
+
+        &:hover {
+            background-color: #fbe691;
+        }
+    }
+
+    .rg-connect-ctl-center {
+        width: var(--center-handler-width);
+        height: var(--center-handler-width);
+        border-radius: 50%;
+        top: calc((100% - var(--center-handler-width)) / 2);
+        left: calc((100% - var(--center-handler-width)) / 2);
+    }
+
+    .rg-connect-ctl-t {
+        width: var(--border-point-width);
+        height: var(--border-point-height);
+        top: calc(var(--border-point-height) / -2);
+        left: calc((100% - var(--border-point-width)) / 2);
+    }
+
+    .rg-connect-ctl-b {
+        width: var(--border-point-width);
+        height: var(--border-point-height);
+        bottom: calc(var(--border-point-height) / -2);
+        left: calc((100% - var(--border-point-width)) / 2);
+    }
+
+    .rg-connect-ctl-l {
+        width: var(--border-point-height);
+        height: var(--border-point-width);
+        left: calc(var(--border-point-height) / -2);
+        top: calc((100% - var(--border-point-width)) / 2);
+    }
+
+    .rg-connect-ctl-r {
+        width: var(--border-point-height);
+        height: var(--border-point-width);
+        right: calc(var(--border-point-height) / -2);
+        top: calc((100% - var(--border-point-width)) / 2);
+    }
+
+    .rg-connect-ctl-lr {
+        width: 100%;
+        height: var(--hv-handler-width);
+        right: 0px;
+        top: calc((100% - var(--hv-handler-width)) / 2);
+        z-index: 11;
+        opacity: 0.01;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    .rg-connect-ctl-tb {
+        width: var(--hv-handler-width);
+        height: 100%;
+        top: 0px;
+        left: calc((100% - var(--hv-handler-width)) / 2);
+        z-index: 10;
+        opacity: 0.01;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    .rg-connect-ctl-bottom-bar {
+        border: 0px;
+        border: none;
+        width: 100%;
+        height: var(--border-handler-width);
+        right: 0px;
+        top: calc(100%);
+        z-index: 5;
+        opacity: 0.1;
+        box-shadow: none;
+        background-color: var(--edit-ctl-light-color);
+        border-radius: var(--hander-border-radius);
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        overflow: hidden;
+
+        &:hover {
+            //border-top: var(--hander-border-color) solid 1px;
+            opacity: 1;
+        }
+    }
+
+    .rg-connect-ctl-top-bar {
+        border: 0px;
+        border: none;
+        width: 100%;
+        height: var(--border-handler-width);
+        right: 0px;
+        top: calc(var(--border-handler-width) * -1);
+        z-index: 5;
+        opacity: 0.1;
+        box-shadow: none;
+        background-color: var(--edit-ctl-light-color);
+        border-radius: var(--hander-border-radius);
+        border-bottom-left-radius: 0px;
+        border-bottom-right-radius: 0px;
+        overflow: hidden;
+
+        &:hover {
+            //border-bottom: var(--hander-border-color) solid 1px;
+            opacity: 1;
+        }
+    }
+
+    .rg-connect-ctl-left-bar {
+        border: 0px;
+        border: none;
+        width: var(--border-handler-width);
+        height: 100%;
+        left: calc(var(--border-handler-width) * -1);
+        top: 0;
+        z-index: 5;
+        opacity: 0.1;
+        box-shadow: none;
+        background-color: var(--edit-ctl-light-color);
+        border-radius: var(--hander-border-radius);
+        border-bottom-right-radius: 0px;
+        border-top-right-radius: 0px;
+        overflow: hidden;
+
+        &:hover {
+            //border-right: var(--hander-border-color) solid 1px;
+            opacity: 1;
+        }
+    }
+
+    .rg-connect-ctl-right-bar {
+        border: 0px;
+        width: var(--border-handler-width);
+        height: 100%;
+        right: calc(var(--border-handler-width) * -1);
+        top: 0px;
+        z-index: 5;
+        opacity: 0.1;
+        box-shadow: none;
+        background-color: var(--edit-ctl-light-color);
+        border-radius: var(--hander-border-radius);
+        border-bottom-left-radius: 0px;
+        border-top-left-radius: 0px;
+        overflow: hidden;
+
+        &:hover {
+            //border-left: var(--hander-border-color) solid 1px;
+            opacity: 1;
+        }
+    }
+
+    // 引入 relation-graph-rg-miniview.scss
+    @import './relation-graph-rg-miniview.scss';
+
+    .rg-node-flashing {
+        animation: ACTRGNodeFlashing 2s infinite;
+    }
+
+    .rg-node-vtree-2 {
+        transform-origin: 0 0;
+        transform: rotate(30deg) translateX(0px);
+    }
+
+    .rg-node-vtree {
+        width: 130px;
+        height: 45px;
+        text-align: left;
+    }
+
+    .rg-node-expand-holder {
+        position: absolute;
+        user-select: none;
+        height: fit-content;
+        width: fit-content;
+        //border:red solid 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        pointer-events: none;
+        color: #000;
+        .rg-node-expand-button {
+            width: 16px;
+            height: 16px;
+            border-radius: 15px;
+            cursor: pointer;
+            pointer-events: all;
+            border: #666 solid 1px;
+            background-color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .rg-icon {
+            width: 14px;
+            height: 14px;
+        }
+    }
+    .c-expand-positon-hide {
+        display: none;
+    }
+    .c-expand-positon-left {
+        transform: translateX(-100%) translateY(-50%);
+        left: -5px;
+        top: calc(50%);
+    }
+
+    .c-expand-positon-right {
+        transform: translateX(5px) translateY(-50%);
+        left: calc(100%);
+        top: calc(50%);
+    }
+
+    .c-expand-positon-bottom {
+        transform: translateX(-50%);
+        left: calc(50%);
+        top: calc(100% + 5px);
+    }
+
+    .c-expand-positon-top {
+        transform: translateX(-50%) translateY(-100%);
+        left: calc(50%);
+        top: calc(-5px);
+    }
+
+    /*****************************[debug]****************************************/
+    .rg-setting-panel {
+        --height: 300px;
+        --width: 200px;
+        width: 300px;
+        height: 200px;
+        position: absolute;
+        left: 10px;
+        top: 5px;
+        font-size: 12px;
+        color: rgb(58, 91, 178);
+        padding: 10px;
+        overflow: hidden;
+        box-shadow: 0px 0px 5px #999999;
+        border-radius: 5px;
+        z-index: 1000;
+        background-color: #ffffff;
+        border: #999999 solid 1px;
+        padding-top: 60px;
+    }
+
+    .rg-setting-panel-button {
+        height: 35px;
+        width: 35px;
+        font-size: 8px;
+        line-height: 35px;
+        text-align: center;
+        border-radius: 50%;
+        position: absolute;
+        margin-left: 25px;
+        margin-top: 20px;
+        background-color: rgb(58, 91, 178);
+        color: #ffffff;
+        cursor: pointer;
+        z-index: 1001;
+        box-shadow: 0px 0px 8px #999999;
+    }
+
+    .rg-setting-panel-button:hover {
+        box-shadow: 0px 0px 20px #FFA20A;
+        border: #ffffff solid 1px;
+        color: #FFA20A;
+        -moz-transform: rotate(-89deg) translateX(-190px);
+        animation-timing-function: linear;
+        animation: flashButton 2s infinite;
+    }
+
+    @keyframes flashButton {
+        from {
+            box-shadow: 0px 0px 8px rgb(46, 78, 143);
+        }
+        30% {
+            box-shadow: 0px 0px 20px #FFA20A;
+        }
+        to {
+            box-shadow: 0px 0px 8px rgb(46, 78, 143);
+        }
+    }
+
+    .c-debug-tools-row {
+        text-align: left;
+    }
+
+    /*****************************[Operate]****************************************/
+    .rg-operate {
+        pointer-events: none;
+        user-select: none;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 180;
+
+        .rg-node {
+            cursor: move;
+        }
+
+        .rg-creating-container {
+            pointer-events: none;
+            position: relative;
+            //.rg-node-peel {
+            //    pointer-events: none !important;
+            //}
+            //.rg-events-all {
+            //    pointer-events: none !important;
+            //}
+            //.rg-connect-ctl-handler {
+            //    pointer-events: none !important;
+            //}
+            * {
+                pointer-events: none !important;
+            }
+        }
+    }
+
+    .rg-selection {
+        pointer-events: none;
+        position: absolute;
+        user-select: none;
+        //background-color: rgba(14, 122, 123, 0.3);
+        //border:rgba(14, 122, 123, 1) solid 1px;
+        background-color: var(--editor-light-opacity);
+        border: var(--editor-main-color) solid 1px;
+        transform-origin: 0 0;
+    }
+
+    .rg-graph-loading {
+        position: absolute;
+        z-index: 1600;
+        left: 0px;
+        top: 0px;
+        height: 100%;
+        width: 100%;
+        background-color: rgba(255, 255, 255, 0.9);
+        @keyframes turn {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+            25% {
+                -webkit-transform: rotate(90deg);
+            }
+            50% {
+                -webkit-transform: rotate(180deg);
+            }
+            75% {
+                -webkit-transform: rotate(270deg);
+            }
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        .rg-graph-loading-icon {
+            width: 16px;
+            height: 16px;
+            vertical-align: -3px;
+            fill: currentColor;
+            overflow: hidden;
+            animation: turn 1s linear infinite;
+        }
+
+        .rg-graph-loading-message {
+            //display: none;
+            position: absolute;
+            padding: 2px 15px;
+            text-align: center;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 5px;
+            font-size: 12px;
+            background-color: rgba(255, 255, 255);
+            border: #666 solid 1px;
+            color: #666666;
+            display: flex;
+            place-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+    }
+
+    .rg-graph-loading-hide {
+        //animation: slowHide 0.5s forwards;
+        display: none;
+    }
+
+    @keyframes slowHide {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+            display: none;
+        }
+    }
+
+    .rg-easy-view {
+        overflow: visible;
+        height: 100%;
+        width: 100%;
+        background-color: transparent;
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        z-index: 3;
+        pointer-events: none;
+
+        canvas {
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    .rg-easy-view-active {
+        //background-color: rgba(128,128,255,0.39);
+        pointer-events: all;
+
+        canvas {
+            opacity: 1;
+        }
+    }
+
+    .rg-move-operator {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        user-select: none;
+        left: 0px;
+        top: 0px;
+        z-index: 6666;
+
+        .rg-move-touchpad {
+            display: none;
+            background-color: var(--edit-ctl-light2-color);
+            height: 100%;
+            width: 100%;
+            pointer-events: all;
+            touch-action: none;
+            overscroll-behavior: none;
+            //cursor: url('/lucky-view-res/builder-images/move-cursor.png') 10 10, auto;
+        }
+    }
+
+    .rg-move-operator.rg-move-operator-active {
+        pointer-events: all;
+        //background-color: rebeccapurple;
+        cursor: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMzJweCIgaGVpZ2h0PSIzMnB4Ij48aW1hZ2UgeGxpbms6aHJlZj0iZGF0YTppbWFnZS9wbmc7YmFzZTY0LGlWQk9SdzBLR2dvQUFBQU5TVWhFVWdBQUFFQUFBQUJBQ0FZQUFBQ3FhWEhlQUFBQUFYTlNSMElBcnM0YzZRQUFDWlpKUkVGVWVGN3RXZ3RNVk5rWi9xYThabkZ4QkVIQWlCV3lFa0drUEcwRW1paWdGVVZzcFZxTmlsSmZRVEV4c2k2eDFqZHRMVnVEeGpoTlJDc0JzeHBOZktEV0J4Q05QTFFpaUNoRzBTQkxKZHBTYUFWNXlHaW4rOTNjdzQ2enVEc0Rkd1lUT01uSm5XRXU5NTcvKy8vLyt4L25xRERJaDJxUXk0OGhBSVlzWUpBak1PUUNnOXdBaGtod3lBV0dYR0NRSXpEa0FnTmtBQUo0UXdYbzViV0lxMVdXWm0wTDRQdCtCTUJHdnZJN0o0WG0vQitBZC9MVktrQllBd0FocEJEY3RyS3lNc3pYMTNlcG5aMWRvTDI5ZlhoM2QzZTVUcWVycnEydHpRc0pDYmtENEswUkVCWUR3NUlBR0dxYkdyY0ZZSGYvL3YxWkV5Wk0rTE90cmEyN3NZMi9mZnYybjQ4ZVBmcDgwcVJKZndPZ2s0RWdHTFFNVHNXQnNBUUFRdU1VMkxhc3JDekF6ODh2U2ExV0I2dlY2Z2doOUtWTGw4QjU0TUFCckYrL0huRnhjZElVUTZmVFBlN3M3THgyK1BEaFA2U2xwZjNieUNvVTR3ZExBRUJ0YzlxM3RMUnNkWFoyL3NKNHRRME5EUWdNRE1TclY2OTZmdEpvTktpdXJzYllzV1BmdTEybjB6MjRjZVBHNnRqWTJHb0EzUWF1b1FnSVNnUEE1OWxSZUsxVzY1T1NrbktQcXp4eTVBaU9IajJLMHRKU1RKMDZGY09HRGNQRml4ZXhZOGNPYk4rK0hUdDM3cFErejU0OUcrM3Q3YmgrL1RvaUl5T1JuSnlNRlN0V29MdTd1elkzTjNmK3FsV3I2bVFRaEZ2MEd3U2xBYURtSFFBNHZuang0azhlSGg2L29URFRwazNyZGFGNi9iY3VyVkwxdnBScjE2NUpvTDE4K2ZLdm5wNmV2d1hRQ2VDTjdCTDk1Z1dsQWFEMkhRRTR0YmEyWG5CeWN2cEpSRVFFYnQ2OCtSMXRFNUhlQURDMmlpbFRwcUNzckV3Q3NLT2o0MjVYVjFkNWZuNStWbkp5Y29OTWxDSnM5c2thbEFTQXo2TDJod0VZb2Rmcm4zSkZRck85Q2R1WHYvR1pPcDN1SC9YMTllbSt2cjc1QnRHQzFtRDJVQklBeG5rMXRRL0FSYS9YUDFRS2dISGp4cUcrdnY0N3ZKQ2Vudjd6ZmZ2Mk5SbndndGxoVWtrQTZQK2ZBQmdPWUtSZXJ5ZHJLMklCeG1vVnZORFkyTGh2ekpneHUyVmVFQkhDTEN0UUVnREdmZnEvUmdiZ3JsSUFmSWdYMnRyYWJnOGZQdnlYQU5vQWRNbnVZSFVBYVBvRTB0NElnTnRLQWZCOVhLRlNxWHdBTUtGb2wxM0JMRGZvandWUWNKSGYyeFFWRlFXTUh6OStiazFOemRkeGNYRVA5WHA5c1pVQThBUFFBdUMxYkFWbWtXRmZBYURnVXFwYlYxY1g3Kzd1L2l0SFI4ZjV2ZG1lMGxIQStIa3FsU29RUURPQVZwa0xHQlpOSG4wQlFBaHZYMUZSTVRVa0pPUVUyWjhzZmV2V0xYUjFkU0VoSVFFdUxpN1NJcXdBUUpBTUFOMmdRMDZWTFFZQUFaT3l2ZFRVMUZGNzkrNHR0TGUzOThuSnlVRnFhcXFVeG5Jd245KzBhWlAwTnlzQUVBS0F4WklBZ0dteXljTmNDNkQyU1hhZkZCY1h4MGRGUmVVMk5UVmg4dVRKVXB4ZXVIQWgzcjE3aDFPbmFCVEF5Wk1uc1dEQkF1bXpJWkd4NkhuOCtESG16Ly9XYTBTNnpCQW5oaW5ncVZTcVVBRE1CYXdDQUxYUFpPZlR1cnE2MzNsN2U2ZHF0VnFzVzdjT3k1Y3Zsd29lamtPSERtSE5talVZT1hJa21wdnBudThEWUtwNkJKQ0dRUFhDQVFTQUZ2QmYyUVVzYWdITTlhVmtwN2k0ZUZsVVZGVEdpUk1uc0dqUklrbjd4NDhmNzVHTkdtVWhKSWFoQlpnS2dDbWtLbHVBVlFGZ3JxODVkdXhZM09MRmkvOUMwdzhJQ0lDTmpRMEtDd3NSSGg3ZXMrNVpzMlpKVFErUnlQUkg4QSs1eFlBQkFNQzFvYUhob0plWDEwODNidHlJckt3c1RKOCtIVmV2WGxWQ3pnOCs0d011WURVT0VPa3U4MzNYN096c09TdFhydHoxK3ZWclJFZEhvN3k4SEZ1M2JzV3VYYnNzQnNKQUF5QklrQldmTTRCUnQyL2Yvanc4UER6K3lwVXJtRGx6cGlUNGhRc1hwTzZPMHFPcXFnckJ3Y0VZUFhvMEdoc2I4ZWJObTFkcXRacmRGcXVIUVJZOUkxajBCQVVGalNzb0tQalMxZFgxeDl1MmJjUHUzYnVsUmJLSm9WWXpZQ2czbUcrd1RSWWFHb283ZCs2Z3RiWDFhNDFHOHdzREFOZ3RzbWdVb0RTTUJHeDhTSFUvWFVHcjFjYWxwS1NrODBmMjhpaDhSa1lHdG16Wm9wejAzK1M1NmVucHlNek14TnExYTNIdzRFRTBOVFhkR3pWcVZKSkJKa2dBckpJS2k5WVhTMStDNEZaWldmbEZjSEJ3OUprelp6QnYzanhKOEljUEg4TFBqN1dLTW1QdTNMbkl6OC9IK2ZQbkVSOGZqOU9uVC84eE1USHhLNk5hd0NyRkVNbVFWdkNwY0lVTkd6Wk16c3pNM0dOblorZVFsSlNFdkx3OGFaRmNyQkpEY0F6OW44QTZPanAyUmtkSEx5Z3BLV0hyamRVZ2V3SnNsbG9GQU5IK1psTFU0d3FGaFlXclkySmlmczFVbDY3QTZFQ056Wmt6cDk4WWVIbDU0Zm56NXowNVJVMU56WldBZ0lDZEFQNGxaNEVzaDlrVnNtby9RR3FCaXk2UWs1T1RlMjF0YlphSGg4ZG5vdGRQeWZ1YkJTNWJ0Z3k1dWJtWU9IRWlDZ29LNE9ucGljMmJONi9mczJkUHFVeUFMSVZaQ1hJN3pheGhiakZrK0hCUkdZcEdLS09DSU1UTnZKRmNRRTVnVkNncEthSFptclU0M2h3Ykc0dWlvaUpKZUJaWC92Nyt1SGZ2WGtGUVVGQ0dYQVFaTmtQTUlrQSt2ejhBOFA5WkhmYlVCd3lMbktXbHBlc2pJaUlTZUFQMyt5NWZ2Z3huWjJka1oyY2pNVEhSSkJBWTh0TFMwdERTMHZLZThNM056UTJ1cnE1clpPRlphWWtxMEd6elZ3SUFQa1BzQmtrMWdnQ2hycTd1OTk3ZTNteFc5R3g5OFhOWVdCaVdMbDBLYm5pNHVibEprMXRsRHg0OGtHWk5UWTEwUFh2MnJBU1VvZWFsQmF0VWpQc1VYQlJBb2hWbVZ2d1hXdWl2QlFnUUdSV2tNbGxFQlliSGtwS1NsTWpJU0NrOUpDZWNPM2NPZCs5S3plSWZIR1Q3MWF0WFM1TSsvK3paczJvZkh4K1NIazJlOHo4eTh6UDIwL2ZOWW44bEFUQjJCVVlGa1IrTXlNdkxTMWl5Wk1rSzhVSUN3TWp3NU1rVFBIMzZWTHJTekNrd0JRMEtDcEtLcWhrelpraHV3L0ZONisxNldGallBWm50S1RocmYwRjhmZG9QVUJvQTRRcFN0MGkyQklKQVl0UmtabWIrTENZbVpvcS92MytvV3EwMmlRbDFPdDJicXFxcXYrZms1RnpWYXJYM1pZSHA3NXlNK1dSOUNrL1ROeXYwR1RQNUQ1cWppVGVJcUVBUWhEdlFHbGc1OGtyM1VPL2Z2ejh5SkNURTE4M056ZFhaMmRsVm85RzRPRGc0T0haMmRyWjFkSFMwdGJlM3R4VVhGNWRuWldXVlZWUlVNTWF6MFVpQk9hbDFmaGZDOTJ0alZDa1NOQVpVT2h3aHRzbmx6VklLVDVLa2RSQWNSZzd5aGpnc3hXZUlRMUxVS0RYTHJJNkNVbUF4K1owN1FJb2RsRkNDQkkwTlJGaUNTSmVaTEZGd0lUeS9Fd0FCQWtPcEFJQWFGUUJRVUU2U25EZ1RRRkFFNGZXSjlIcGJySWtXYnRadGhnZWtwQk1qOGhTZnBVMFZPWThRQVBBRkJJQ1RRbkpTWUdwYmZCY25RL3JzODlZQ1FMem52ZTB6c1p0a1lQcmlkMkVCRkV5QVFHSEZGTDZ1aU5ZdFJZTGZaeUxDSW9UQVlrTlZhSisvaThPU3ZSMllWRnh3UzRSQlUzMUU4STQ0VG1mOGY0WkFtUHJNUHQ5bkNSTHM4MklHNGgrSEFCZ0kxRCttZHc1WndNZWtqWUZZeTVBRkRBVHFIOU03QjcwRi9COEJrUXA5WU5iRzJRQUFBQUJKUlU1RXJrSmdnZz09IiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiLz48L3N2Zz4=) 16 16, auto !important;
+        cursor: -webkit-image-set(url("data:image/png;base64,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") 2x, url("data:image/png;base64,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") 1x) 16 16, auto !important;
+
+        .rg-move-touchpad {
+            display: flex;
+        }
+    }
+}
+
+.relation-graph.rg-creating-line {
+    .rg-connect-source-handle {
+        pointer-events: none;
+        opacity: 0.5;
+    }
+}
+
+.rg-background {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}

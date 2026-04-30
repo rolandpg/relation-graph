@@ -1,47 +1,49 @@
 <template>
-  <div v-if="options && (options.creatingNodePlot || options.creatingSelection)" class="rel-operate">
-    <div style="position: relative;">
-      <SeeksRGNode v-if="options.creatingNodePlot && options.showTemplateNode" :node-props="options.newNodeTemplate">
-        <template #node>
-          <slot :node="options.newNodeTemplate" name="node-template" />
-        </template>
-      </SeeksRGNode>
-      <div
-          v-if="options.creatingSelection"
-          class="rel-selection"
-          :style="{
-            left: options.selectionView.x + 'px',
-            top: options.selectionView.y + 'px',
-            width: options.selectionView.width + 'px',
-            height: options.selectionView.height + 'px',
-          }"
-      >
+    <div v-if="options" class="rg-operate">
+        <div class="rg-creating-container">
+            <RGNodePeel v-if="options.creatingNodePlot && options.showTemplateNode"
+                         :node-props="options.newNodeTemplate">
+                <template #node>
+                    <slot :node="options.newNodeTemplate" name="node"/>
+                </template>
+            </RGNodePeel>
+            <div
+                    v-if="options.creatingSelection"
+                    class="rg-selection"
+                    :style="{
+                            transform: `translate(${options.selectionView.x}px, ${options.selectionView.y}px)`,
+                            width: options.selectionView.width + 'px',
+                            height: options.selectionView.height + 'px',
+                      }"
+            >
 
-      </div>
+            </div>
+        </div>
+        <GraphLoading />
+        <GraphMoveOperator/>
     </div>
-  </div>
 </template>
 
 <script lang="ts">
-import SeeksRGNode from "../RGNode.vue";
+import RGNodePeel from "../RGNodePeel.vue";
+import GraphMoveOperator from "./GraphMoveOperator.vue";
+import GraphLoading from "./GraphLoading.vue";
 
 export default {
-  name: 'GraphOperateStuff',
-  components: {SeeksRGNode},
-  inject: ['graph', 'graphInstance'],
-  computed: {
-    relationGraph() {
-      return this.graphInstance();
+    name: 'GraphOperateStuff',
+    components: {GraphLoading, GraphMoveOperator, RGNodePeel},
+    inject: ['graphStore'],
+    computed: {
+        graphInstance() {
+            return this.graphStore.graphInstance;
+        },
+        options() {
+            return this.graphStore.options;
+        }
     },
-    options() {
-      return this.graph.options;
-    }
-  },
-  mounted() {
-  },
-  methods: {
-
-  }
+    mounted() {
+    },
+    methods: {}
 };
 </script>
 

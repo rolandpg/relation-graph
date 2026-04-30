@@ -1,0 +1,108 @@
+.rg-editing-referline {
+    user-select: none;
+    position: absolute;
+    z-index: 999;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+    left: 0px;
+    top: 0px;
+
+    .rg-referline {
+        position: absolute;
+        display: flex;
+        place-items: center;
+        justify-content: center;
+        overflow: visible;
+        transform-origin: 0 0;
+        --rg-refer-offset: -3px;
+
+        .referline {
+            display: flex;
+            place-items: center;
+            justify-content: center;
+
+            & > div {
+                background-color: var(--editor-main-color);
+                font-size: 8px;
+                border-radius: 3px;
+                color: #ffffff;
+                width: fit-content;
+                height: fit-content;
+                padding: 2px 5px;
+            }
+        }
+    }
+
+    .rg-referline-v {
+        top: 0px;
+        width: 6px;
+        height: 100%;
+        //border-top: var(--editor-main-color) solid 6px;
+        //border-bottom: var(--editor-main-color) solid 6px;
+        .referline {
+            width: 1px;
+            height: 100%;
+            //border-left: var(--editor-main-color) solid 1px;
+            background-color: var(--editor-main-color);
+        }
+
+        &::before {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: var(--editor-main-color);
+            border-radius: 50%;
+            top: 0;
+            transform: translateY(-50%);
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: var(--editor-main-color);
+            border-radius: 50%;
+            bottom: 0;
+            transform: translateY(50%);
+        }
+    }
+
+    .rg-referline-h {
+        left: 0px;
+        width: 100%;
+        height: 6px;
+        //border-left: var(--editor-main-color) solid 6px;
+        //border-right: var(--editor-main-color) solid 6px;
+        .referline {
+            width: 100%;
+            height: 1px;
+            //border-top: var(--editor-main-color) solid 1px;
+            background-color: var(--editor-main-color);
+        }
+
+        &::before {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: var(--editor-main-color);
+            border-radius: 50%;
+            left: 0;
+            transform: translateX(-50%);
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: var(--editor-main-color);
+            border-radius: 50%;
+            right: 0;
+            transform: translateX(50%);
+        }
+    }
+}

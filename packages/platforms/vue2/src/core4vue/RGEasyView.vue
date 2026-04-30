@@ -1,5 +1,5 @@
 <template>
-    <div class="rel-easy-view" :class="{'rel-easy-view-active':options.showEasyView}">
+    <div class="rg-easy-view" :class="{'rg-easy-view-active':options.showEasyView}">
         <canvas ref="rgEasyCanvas" style="width: 100%;height: 100%;" />
     </div>
 </template>
@@ -14,16 +14,13 @@ export default {
         return {
         };
     },
-    inject: ['graphData', 'graph', 'graphInstance'],
+    inject: ['graphStore'],
     computed: {
+        graphInstance() {
+            return this.graphStore.graphInstance;
+        },
         options() {
-            return this.graph.options;
-        },
-        relationGraph() {
-          return this.graphInstance();
-        },
-        allLineColors() {
-            return this.graph.allLineColors;
+            return this.graphStore.options;
         }
     },
     created() {
@@ -31,18 +28,14 @@ export default {
     },
     mounted() {
         devLog('[RGEasyView mounted]');
-      this.relationGraph.setEasyViewCanvas && this.relationGraph.setEasyViewCanvas(this.$refs.rgEasyCanvas);
+        const graphInstance = this.graphInstance;
+        graphInstance.setEasyViewCanvas && graphInstance.setEasyViewCanvas(this.$refs.rgEasyCanvas);
         this.init();
     },
     beforeDestroy() {
     },
     methods: {
         init() {
-            // this.$refs.rgCanvas.style.setProperty('--stroke', `url('#${  this.options.instanceId  }-lineStyle')`);
-            // this.$refs.rgCanvas.style.setProperty('--markerEnd', `url('#${  this.options.instanceId  }-start-arrow-default')`);
-            // this.$refs.rgCanvas.style.setProperty('--markerStart', `url('#${  this.options.instanceId  }-arrow-default')`);
-            // this.$refs.rgCanvas.style.setProperty('--markerEndChecked', `url('#${  this.options.instanceId  }-arrow-checked')`);
-            // this.$refs.rgCanvas.style.setProperty('--markerStartChecked', `url('#${  this.options.instanceId  }-start-arrow-checked')`);
         },
     }
 };

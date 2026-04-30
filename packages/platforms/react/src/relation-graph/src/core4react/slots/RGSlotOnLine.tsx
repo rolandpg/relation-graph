@@ -1,11 +1,9 @@
-import React, {useContext} from 'react';
-import {RelationGraphStoreContext} from "../store/reducers/StockStore";
+import React from 'react';
+import {RGLineSlotProps} from "../../../../../../../types";
 
-const RGSlotOnLine: React.FC = ({ children }) => {
-  const graphInstance = useContext(RelationGraphStoreContext);
-  if (!graphInstance) {
-    return null;
-  }
-  return <>{children}</>;
+const RGSlotOnLine: React.FC<{
+  children: (props: RGLineSlotProps) => React.ReactNode
+}> = () => {
+  return <></>;
 };
 export default RGSlotOnLine;

@@ -1,0 +1,77 @@
+{
+  "name": "@relation-graph/vue2",
+  "version": "3.0.12",
+  "description": "Vue2 relationship graph component for visualizing and editing knowledge graphs, org charts, and equity structures. force-directed layouts, tree layouts, and interactive graph editing.",
+  "main": "./relation-graph.umd.js",
+  "module": "./relation-graph.mjs",
+  "unpkg": "./relation-graph.umd.js",
+  "types": "./types/packages/platforms/vue2/src/index.d.ts",
+  "style": "./style.css",
+  "exports": {
+    ".": {
+      "types": "./types/packages/platforms/vue2/src/index.d.ts",
+      "import": "./relation-graph.mjs",
+      "require": "./relation-graph.umd.js"
+    },
+    "./style.css": "./style.css"
+  },
+  "author": "WanLian <seeksdream@qq.com>",
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/relation-graph/relation-graph.git"
+  },
+  "homepage": "https://relation-graph.com",
+  "keywords": [
+    "relation-graph vue2 version",
+    "vue2 relationship graph",
+    "vue2 knowledge graph",
+    "vue2 graph editor",
+    "vue2 graph visualization",
+    "vue2 network topology",
+    "vue2 flowchart",
+    "vue2 force layout",
+    "vue2 dag",
+    "vue2 uml",
+    "vue2 er diagram",
+    "vue2 component",
+    "vue2 关系图谱",
+    "vue2 知识图谱",
+    "vue2 图谱编辑器",
+    "vue2 流程图",
+    "vue2 网络拓扑",
+    "vue2 数据可视化"
+  ],
+  "bugs": {
+    "url": "https://github.com/relation-graph/relation-graph/issues"
+  },
+  "sideEffects": [
+    "*.css"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "^5.30.0",
+    "@typescript-eslint/parser": "^5.30.0",
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^6.12.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-eslint-plugin": "^2.3.0",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-react": "^7.21.5",
+    "eslint-plugin-standard": "^5.0.0",
+    "eslint-plugin-vue": "^8.7.1",
+    "prettier": "^2.7.1",
+    "typescript": "^4.7.4",
+    "vue-eslint-parser": "^9.3.1",
+    "yaml-eslint-parser": "^1.0.1"
+  },
+  "directories": {
+    "doc": "doc",
+    "example": "examples"
+  }
+}

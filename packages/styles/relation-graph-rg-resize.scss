@@ -1,0 +1,71 @@
+.rg-resize-ctl {
+    user-select: none;
+    position: relative;
+    height: 100%;
+    width: 100%;
+    --resize-handler-size: 10px;
+    --resize-handler-offset: -5px;
+
+    .rg-resize-ctl-handler {
+        pointer-events: auto;
+        width: var(--resize-handler-size);
+        height: var(--resize-handler-size);
+        background-color: #fff;
+        //border: var(--editor-main-color) solid 1px;
+        position: absolute;
+        border-radius: 2px;
+        box-shadow: inset 0 0 0 1px var(--editor-main-color);
+    }
+
+    .rg-resize-ctl-tl {
+        cursor: nwse-resize;
+        left: var(--resize-handler-offset);
+        top: var(--resize-handler-offset);
+    }
+
+    .rg-resize-ctl-tr {
+        cursor: nesw-resize;
+        right: var(--resize-handler-offset);
+        top: var(--resize-handler-offset);
+    }
+
+    .rg-resize-ctl-bl {
+        cursor: nesw-resize;
+        left: var(--resize-handler-offset);
+        bottom: var(--resize-handler-offset);
+    }
+
+    .rg-resize-ctl-br {
+        cursor: nwse-resize;
+        right: var(--resize-handler-offset);
+        bottom: var(--resize-handler-offset);
+    }
+
+    .rg-resize-ctl-t {
+        cursor: n-resize;
+        top: var(--resize-handler-offset);
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .rg-resize-ctl-b {
+        cursor: s-resize;
+        bottom: var(--resize-handler-offset);
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .rg-resize-ctl-l {
+        cursor: w-resize;
+        left: var(--resize-handler-offset);
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .rg-resize-ctl-r {
+        cursor: e-resize;
+        right: var(--resize-handler-offset);
+        top: 50%;
+        transform: translateY(-50%);
+    }
+}

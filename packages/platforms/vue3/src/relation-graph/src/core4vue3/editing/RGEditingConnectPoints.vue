@@ -1,28 +1,29 @@
 <template>
-  <div
-    class="rel-connect-ctl"
-  >
-    <div class="rel-connect-ctl-handler rel-connect-ctl-t" data-point="top" @mouseup="onMouseUp('top', $event)"></div>
-    <div class="rel-connect-ctl-handler rel-connect-ctl-b" data-point="bottom" @mouseup="onMouseUp('bottom', $event)"></div>
-    <div class="rel-connect-ctl-handler rel-connect-ctl-center" data-point="border" @mouseup="onMouseUp('border', $event)"></div>
-    <div class="rel-connect-ctl-handler rel-connect-ctl-l" data-point="left" @mouseup="onMouseUp('left', $event)"></div>
-    <div class="rel-connect-ctl-handler rel-connect-ctl-r" data-point="right" @mouseup="onMouseUp('right', $event)"></div>
-    <div class="rel-connect-ctl-handler rel-connect-ctl-lr" data-point="lr" @mouseup="onMouseUp('lr', $event)"></div>
-    <div class="rel-connect-ctl-handler rel-connect-ctl-tb" data-point="tb" @mouseup="onMouseUp('tb', $event)"></div>
-  </div>
+      <div
+        class="rg-connect-ctl"
+        @mouseup="mouseUpOnJunctionPointWithOffset('', $event)"
+        @touchend="mouseUpOnJunctionPointWithOffset('', $event)"
+      >
+            <div class="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-t" data-point="top" @mouseup="mouseUpOnJunctionPoint('top', $event)"></div>
+            <div class="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-b" data-point="bottom" @mouseup="mouseUpOnJunctionPoint('bottom', $event)"></div>
+            <div class="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-center" data-point="border" @mouseup="mouseUpOnJunctionPoint('border', $event)"></div>
+            <div class="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-l" data-point="left" @mouseup="mouseUpOnJunctionPoint('left', $event)"></div>
+            <div class="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-r" data-point="right" @mouseup="mouseUpOnJunctionPoint('right', $event)"></div>
+            <div class="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-lr" data-point="lr" @mouseup="mouseUpOnJunctionPoint('lr', $event)"></div>
+            <div class="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-tb" data-point="tb" @mouseup="mouseUpOnJunctionPoint('tb', $event)"></div>
+            <div class="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-bottom-bar" data-point="bottom" data-innode="true" @mouseup="mouseUpOnJunctionPointWithOffset('bottom', $event)" @touchend="onMouseUpWithOffset('bottom', $event)"></div>
+            <div class="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-top-bar" data-point="top" data-innode="true" @mouseup="mouseUpOnJunctionPointWithOffset('top', $event)" @touchend="onMouseUpWithOffset('top', $event)"></div>
+            <div class="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-left-bar" data-point="left" data-innode="true" @mouseup="mouseUpOnJunctionPointWithOffset('left', $event)" @touchend="onMouseUpWithOffset('left', $event)"></div>
+            <div class="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-right-bar" data-point="right" data-innode="true" @mouseup="mouseUpOnJunctionPointWithOffset('right', $event)" @touchend="onMouseUpWithOffset('right', $event)"></div>
+    </div>
 </template>
 
 <script lang="ts" setup>
-import {JsonLine, RGWidgetPosition, RGUserEvent, RGJunctionPoint} from "../../../../types";
-import {computed, inject} from "vue";
-import {graphKey} from "../../../../constants";
-const graph = inject(graphKey)
-const graphInstance = computed(() => {
-  return graph!.instance!;
-})
-const onMouseUp = (type: RGJunctionPoint, $event: RGUserEvent) => {
-  graphInstance.value.onLineVertexBeDropped(type, $event);
-}
+import {RGUserEvent, RGJunctionPoint} from "../../../../types";
+const {mouseUpOnJunctionPoint, mouseUpOnJunctionPointWithOffset} = defineProps<{
+    mouseUpOnJunctionPoint: (type: RGJunctionPoint, $event: RGUserEvent) => void;
+    mouseUpOnJunctionPointWithOffset: (type: RGJunctionPoint, $event: RGUserEvent) => void;
+}>();
 </script>
 
 <style scoped>

@@ -1,0 +1,107 @@
+
+.rg-miniview {
+    pointer-events: all;
+    position: absolute;
+    user-select: none;
+    overflow: hidden;
+    z-index: 1100;
+    min-height: 100px;
+    min-width: 100px;
+    --miniview-width: 200px;
+    --miniview-height: 120px;
+    height: var(--miniview-height);
+    width: var(--miniview-width);
+    border-radius: 3px;
+    //box-shadow: 1px 1px 4px 1px rgba(204, 204, 204, 0.55);
+    display: flex;
+    place-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 1px #cccccc;
+    border: none;
+
+    .rg-miniview-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        place-items: center;
+        justify-content: center;
+    }
+
+    canvas {
+        //background-color: #ffffff;
+        //border: #cccccc solid 1px;
+        opacity: 1;
+    }
+
+    .rg-mv-canvas-reset {
+        cursor: pointer;
+
+        &:hover {
+            background-color: rgba(187, 245, 71, 0.58);
+        }
+    }
+
+    .rg-mv-visible-area {
+        z-index: 2;
+        position: absolute;
+        left: 0;
+        top: 0;
+        cursor: move;
+        //background-color: var(--editor-light-opacity);
+        //transition: left 0.2s ease-in-out, top 0.2s ease-in-out;
+        transform-origin: 0 0;
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.2);
+        //border: 1px solid #cccccc;
+        border: #888 solid 1px;
+        border-radius: 3px;
+
+        /* 里面的内容会完全可见 */
+        display: grid;
+        place-items: center;
+        color: white;
+        font-weight: bold;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+}
+
+.rg-miniview.rg-miniview-top {
+    left: calc((100% - var(--miniview-width)) / 2);
+    top: 10px;
+}
+
+.rg-miniview.rg-miniview-bottom {
+    left: calc((100% - var(--miniview-width)) / 2);
+    bottom: 10px;
+}
+
+.rg-miniview.rg-miniview-left {
+    left: 10px;
+    top: calc((100% - var(--miniview-height)) / 2);
+}
+
+.rg-miniview.rg-miniview-right {
+    right: 10px;
+    top: calc((100% - var(--miniview-height)) / 2);
+}
+
+.rg-miniview.rg-miniview-tl {
+    left: 10px;
+    top: 10px;
+}
+
+.rg-miniview.rg-miniview-tr {
+    right: 10px;
+    top: 10px;
+}
+
+.rg-miniview.rg-miniview-bl {
+    left: 10px;
+    bottom: 10px;
+}
+
+.rg-miniview.rg-miniview-br {
+    right: 10px;
+    bottom: 10px;
+}

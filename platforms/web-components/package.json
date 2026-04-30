@@ -1,0 +1,65 @@
+{
+  "name": "@relation-graph/web-components",
+  "version": "3.0.12",
+  "description": "Framework-agnostic Web Component for relationship graph visualization. Easily integrate knowledge graphs, org charts, and network topologies into any web application (Vanilla JS, Angular, etc.) with built-in layouts and editing features.",
+  "main": "./relation-graph.umd.js",
+  "module": "./relation-graph.mjs",
+  "unpkg": "./relation-graph.umd.js",
+  "types": "./types/packages/platforms/svelte/src/index.d.ts",
+  "author": "WanLian <seeksdream@qq.com>",
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/relation-graph/relation-graph.git"
+  },
+  "homepage": "https://relation-graph.com",
+  "keywords": [
+    "relation-graph web-components version",
+    "web-components relationship graph",
+    "web-components knowledge graph",
+    "web-components graph editor",
+    "web-components graph visualization",
+    "web-components network topology",
+    "web-components flowchart",
+    "web-components force layout",
+    "web-components dag",
+    "web-components uml",
+    "web-components er diagram",
+    "web-components component",
+    "web-components 关系图谱",
+    "web-components 知识图谱",
+    "web-components 图谱编辑器",
+    "web-components 流程图",
+    "web-components 网络拓扑",
+    "web-components 数据可视化"
+  ],
+  "bugs": {
+    "url": "https://github.com/relation-graph/relation-graph/issues"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "^5.30.0",
+    "@typescript-eslint/parser": "^5.30.0",
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^6.12.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-eslint-plugin": "^2.3.0",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-react": "^7.21.5",
+    "eslint-plugin-standard": "^5.0.0",
+    "eslint-plugin-vue": "^8.7.1",
+    "prettier": "^2.7.1",
+    "typescript": "^4.7.4",
+    "vue-eslint-parser": "^9.3.1",
+    "yaml-eslint-parser": "^1.0.1"
+  },
+  "directories": {
+    "doc": "doc",
+    "example": "examples"
+  }
+}

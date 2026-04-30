@@ -1,82 +1,89 @@
 <template>
-  <div
-    class="rel-miniview"
-    :class="['rel-miniview-' + position]"
-    ref="rgMiniView"
-  >
-    <canvas
-      ref="rgMiniViewCanvas"
-      :class="{
-      'rel-mv-canvas-reset': options.miniViewVisibleHandle.emptyContent
-      }"
-      @click="onClickCanvas"
-    />
     <div
-      class="rel-mv-visible-area"
-      @mousedown="onMouseDown"
-      :style="{
-      left: options.miniViewVisibleHandle.x + 'px',
-      top: options.miniViewVisibleHandle.y + 'px',
-      width: options.miniViewVisibleHandle.width + 'px',
-      height: options.miniViewVisibleHandle.height + 'px'
-    }"
-    ></div>
-  </div>
+            class="rg-miniview"
+            :class="[
+                'rg-miniview-' + position,
+                $attrs.className
+            ]"
+            ref="rgMiniView"
+            :style="{
+                ...$attrs.style,
+                '--miniview-width': width,
+                '--miniview-height': height
+            }"
+    >
+        <div class="rg-miniview-container">
+            <canvas
+                    ref="rgMiniViewCanvas"
+                    :class="{
+                      'rg-mv-canvas-reset': miniViewVisibleHandle.emptyContent
+                      }"
+                    @click="onClickCanvas"
+            />
+            <div
+                    class="rg-mv-visible-area"
+                    @mousedown="onMouseDown"
+                    :style="{
+                        transform: `translate(${miniViewVisibleHandle.x}px, ${miniViewVisibleHandle.y}px)`,
+                        width: miniViewVisibleHandle.width + 'px',
+                        height: miniViewVisibleHandle.height + 'px'
+                    }"
+            ></div>
+        </div>
+    </div>
 </template>
 
 <script lang="ts">
-import {RGUserEvent} from "../../../../../relation-graph-models/types";
+import {RGUserEvent} from "../../../../../types";
 
 export default {
-  name: 'RGMiniView',
-  components: {},
-  props: {
-    position: {
-      mustUseProp: false,
-      default: 'br',
-      type: String
+    name: 'RGMiniView',
+    components: {},
+    props: {
+        position: {
+            mustUseProp: false,
+            default: 'br',
+            type: String
+        },
+        width: {
+            mustUseProp: false,
+            type: String
+        },
+        height: {
+            mustUseProp: false,
+            type: String
+        }
     },
-    width: {
-      mustUseProp: false,
-      default: '200px',
-      type: String
+    inject: ['graphStore'],
+    computed: {
+        graphInstance() {
+            return this.graphStore.graphInstance;
+        },
+        options() {
+            return this.graphStore.options;
+        },
+        miniViewVisibleHandle() {
+            return this.options.miniViewVisibleHandle;
+        }
     },
-    height: {
-      mustUseProp: false,
-      default: '200px',
-      type: String
+    data() {
+        return {};
+    },
+    mounted() {
+        this.graphInstance.onMiniViewMounted();
+        this.graphInstance.setMiniViewCanvas(this.$refs.rgMiniViewCanvas);
+    },
+    methods: {
+        onMouseDown(e: RGUserEvent) {
+            this.graphInstance.onVisibleViewHandleDragStart(e);
+        },
+        onClickCanvas(e: RGUserEvent) {
+            this.graphInstance.resetByVisiableView(e);
+        }
+    },
+    beforeDestroy() {
+        this.graphInstance.onMiniViewUnMounted();
     }
-  },
-  inject: ['graph', 'graphInstance'],
-  computed: {
-    options() {
-      return this.graph.options;
-    },
-    relationGraph() {
-      return this.graphInstance();
-    }
-  },
-  data() {
-    return {
-    };
-  },
-  mounted() {
-    this.options.showMiniView = true;
-    this.$refs.rgMiniView.style.setProperty('--mv-width', this.width);
-    this.$refs.rgMiniView.style.setProperty('--mv-height', this.height);
-    this.relationGraph.setMiniViewCanvas(this.$refs.rgMiniViewCanvas);
-  },
-  methods: {
-    onMouseDown(e: RGUserEvent) {
-      this.relationGraph.onVisiableViewHandleDragStart(e);
-    },
-    onClickCanvas(e: RGUserEvent) {
-      this.relationGraph.resetByVisiableView(e);
-    }
-  },
-  beforeDestroy() {
-    this.options.showMiniView = false;
-  }
 };
 </script>
 

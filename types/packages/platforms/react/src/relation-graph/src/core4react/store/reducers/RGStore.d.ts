@@ -1,0 +1,10 @@
+import { default as React } from 'react';
+import { RelationGraphInstance } from '../../../../../../../../types';
+import { RGDataStore } from '../../../../../types-react';
+export type RGUpdateAction = (rgInstance: RelationGraphInstance) => void;
+export type RelationGraphReducer = (state: RelationGraphInstance, action: RGUpdateAction) => RelationGraphInstance;
+export declare const relationGraphReducer: RelationGraphReducer;
+export declare const RelationGraphStoreContext: React.Context<RelationGraphInstance>;
+export declare const RGUpdateContext: React.Context<((v?: RelationGraphInstance) => void)>;
+export declare const RGUpdateSignalContext: React.Context<number>;
+export declare const RGViewDataContext: React.Context<RGDataStore>;

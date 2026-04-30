@@ -1,11 +1,9 @@
-import React, {useContext} from 'react';
-import {RelationGraphStoreContext} from "../store/reducers/StockStore";
+import React from 'react';
+import {RGNodeSlotProps} from "../../../../../../../types";
 
-const RGSlotOnNode: React.FC = ({ children }) => {
-  const graphInstance = useContext(RelationGraphStoreContext);
-  if (!graphInstance) {
-    return null;
-  }
-  return <>{children}</>;
+const RGSlotOnNode: React.FC<{
+  children: (props: RGNodeSlotProps) => React.ReactNode
+}> = () => {
+  return <></>;
 };
 export default RGSlotOnNode;

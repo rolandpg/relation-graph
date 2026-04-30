@@ -1,52 +1,70 @@
-import React, { useContext } from 'react';
-import {RelationGraphStoreContext} from '../store/reducers/StockStore';
-import {RGJunctionPoint} from "../../../../types";
+import React from 'react';
+import {RGJunctionPoint} from "../../../../../../../types";
 
-const RGEditingConnectPoints = () => {
-  const graphInstance = useContext(RelationGraphStoreContext);
+const RGEditingConnectPoints: React.FC<{
+    mouseUpOnJunctionPointWithOffset: (junctionPoint: RGJunctionPoint, event: any) => void;
+    mouseUpOnJunctionPoint: (junctionPoint: RGJunctionPoint, event: any) => void;
+}> = ({mouseUpOnJunctionPointWithOffset, mouseUpOnJunctionPoint}) => {
+  // const graphInstance = useGraphInstance();
 
-  const onMouseUp = (type: RGJunctionPoint, event: React.MouseEvent) => {
-    graphInstance.onLineVertexBeDropped(type, event.nativeEvent);
-  };
+  // const onMouseUp = (type: RGJunctionPoint, event: React.MouseEvent) => {
+  //   graphInstance.onLineVertexBeDropped(type, event.nativeEvent);
+  // };
 
   return (
-    <div className="rel-connect-ctl">
+    <div
+        className="rg-connect-ctl"
+        onMouseUp={($event) => mouseUpOnJunctionPoint('', $event)}
+        onTouchEnd={($event) => mouseUpOnJunctionPoint('', $event)}
+    >
       <div
-        className="rel-connect-ctl-handler rel-connect-ctl-t"
+        className="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-t"
         data-point="top"
-        onMouseUp={(event) => onMouseUp('top', event)}
+        onMouseUp={(event) => mouseUpOnJunctionPoint('top', event)}
+        onTouchEnd={(event) => mouseUpOnJunctionPoint('top', event)}
       />
       <div
-        className="rel-connect-ctl-handler rel-connect-ctl-b"
+        className="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-b"
         data-point="bottom"
-        onMouseUp={(event) => onMouseUp('bottom', event)}
+        onMouseUp={(event) => mouseUpOnJunctionPoint('bottom', event)}
+        onTouchEnd={(event) => mouseUpOnJunctionPoint('bottom', event)}
       />
       <div
-        className="rel-connect-ctl-handler rel-connect-ctl-center"
+        className="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-center"
         data-point="border"
-        onMouseUp={(event) => onMouseUp('border', event)}
+        onMouseUp={(event) => mouseUpOnJunctionPoint('border', event)}
+        onTouchEnd={(event) => mouseUpOnJunctionPoint('border', event)}
       />
       <div
-        className="rel-connect-ctl-handler rel-connect-ctl-l"
+        className="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-l"
         data-point="left"
-        onMouseUp={(event) => onMouseUp('left', event)}
+        onMouseUp={(event) => mouseUpOnJunctionPoint('left', event)}
+        onTouchEnd={(event) => mouseUpOnJunctionPoint('left', event)}
       />
       <div
-        className="rel-connect-ctl-handler rel-connect-ctl-r"
+        className="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-r"
         data-point="right"
-        onMouseUp={(event) => onMouseUp('right', event)}
+        onMouseUp={(event) => mouseUpOnJunctionPoint('right', event)}
+        onTouchEnd={(event) => mouseUpOnJunctionPoint('right', event)}
       />
       <div
-        className="rel-connect-ctl-handler rel-connect-ctl-lr"
+        className="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-lr"
         data-point="lr"
-        onMouseUp={(event) => onMouseUp('lr', event)}
+        onMouseUp={(event) => mouseUpOnJunctionPoint('lr', event)}
+        onTouchEnd={(event) => mouseUpOnJunctionPoint('lr', event)}
       />
       <div
-        className="rel-connect-ctl-handler rel-connect-ctl-tb"
+        className="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-tb"
         data-point="tb"
-        onMouseUp={(event) => onMouseUp('tb', event)}
+        onMouseUp={(event) => mouseUpOnJunctionPoint('tb', event)}
+        onTouchEnd={(event) => mouseUpOnJunctionPoint('tb', event)}
       />
-    </div>
+    <div className="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-bottom-bar" data-point="bottom" data-innode="true" onMouseUp={($event) => mouseUpOnJunctionPointWithOffset('bottom', $event)} onTouchEnd={($event) => onMouseUpWithOffset('bottom', $event)}></div>
+    <div className="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-top-bar" data-point="top" data-innode="true" onMouseUp={($event) => mouseUpOnJunctionPointWithOffset('top', $event)} onTouchEnd={($event) => onMouseUpWithOffset('top', $event)}></div>
+    <div className="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-left-bar" data-point="left" data-innode="true" onMouseUp={($event) => mouseUpOnJunctionPointWithOffset('left', $event)} onTouchEnd={($event) => onMouseUpWithOffset('left', $event)}></div>
+    <div className="rg-connect-ctl-handler rg-connect-ctl-handler-style rg-connect-ctl-right-bar" data-point="right" data-innode="true" onMouseUp={($event) => mouseUpOnJunctionPointWithOffset('right', $event)} onTouchEnd={($event) => onMouseUpWithOffset('right', $event)}></div>
+
+</div>
   );
 };
 

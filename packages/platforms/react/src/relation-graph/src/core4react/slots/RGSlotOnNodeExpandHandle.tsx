@@ -1,8 +1,8 @@
-import React, {useContext} from 'react';
-import {RelationGraphStoreContext} from "../store/reducers/StockStore";
+import React, {PropsWithChildren} from 'react';
+import {useGraphInstance} from "../../hooks/useGraphInstance";
 
-const RGSlotOnNodeExpandHandle: React.FC = ({ children }) => {
-  const graphInstance = useContext(RelationGraphStoreContext);
+const RGSlotOnNodeExpandHandle: React.FC<PropsWithChildren<{}>> = ({ children }) => {
+  const graphInstance = useGraphInstance();
   if (!graphInstance) {
     return null;
   }

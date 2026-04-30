@@ -1,24 +1,24 @@
-import React, { useContext, useState } from 'react';
-import { RelationGraphStoreContext } from '../store/reducers/StockStore';
+import React from 'react';
+import RGIcons from "./RGIcons";
+import {useGraphInstance} from "../../hooks/useGraphInstance";
+import {useGraphStore} from "../../hooks/useGraphStore";
 
 const GraphLoading: React.FC = () => {
-  const relationGraph = useContext(RelationGraphStoreContext);
-  const options = relationGraph && relationGraph.options;
+  const graphInstance = useGraphInstance();
+  const {options} = useGraphStore();
   const clickGraphMask = (e) => {
-    relationGraph.clickGraphMask(e);
+    graphInstance.clearLoading();
   }
   return (
     <>
     {
       options && <div
-    className={`rel-graph-loading ${!options.graphLoading ? 'rel-graph-loading-hide' : ''}`}
+    className={`rg-graph-loading ${!options.graphLoading ? 'rg-graph-loading-hide' : ''}`}
     onClick={(e) => {clickGraphMask(e);}}
   >
-    <div className="rel-graph-loading-message">
-      <svg className="c-graph-loading-icon" aria-hidden="true">
-        <use xlinkHref="#icon-lianjiezhong"></use>
-      </svg>
-      Loading...
+    <div className="rg-graph-loading-message">
+      <RGIcons iconName="icon-lianjiezhong" className="rg-graph-loading-icon" />
+        {options.graphLoadingText || 'Loading...'}
     </div>
   </div>
 }

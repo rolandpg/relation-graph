@@ -32,7 +32,7 @@
     "play/vue2.6.11/src/",
     "types/",
     "types/components.d.ts",
-    "packages/platforms/vue3/shims-vue.d.ts",
+    "packages/platforms/relation-graph-vue3/shims-vue.d.ts",
     "typings/env.d.ts"
   ],
   "exclude": [

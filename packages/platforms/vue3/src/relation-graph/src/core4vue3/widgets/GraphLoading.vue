@@ -1,24 +1,23 @@
 <script lang="ts" setup>
-import {computed, inject} from "vue";
-import {graphInstanceKey, graphKey} from "../../../../constants";
-// const graphInstance$ = inject(graphInstanceKey)
-const graph = inject(graphKey)
-const options = computed(() => {
-  return graph!.options!;
-})
+import {computed} from "vue";
+import {useGraphInstance} from "../../hooks/useGraphInstance";
+import RGIcons from "./RGIcons.vue";
+
+const graphInstance = useGraphInstance();
+const options = computed(() => graphInstance.dataStores.optionsRef.value);
 const clickGraphMask = (e) => {
-  graph.instance!.clickGraphMask(e);
+    graphInstance.clearLoading();
 }
 </script>
 <template>
-  <div
-      class="rel-graph-loading"
-      :class="{'rel-graph-loading-hide': !options.graphLoading}"
-      @click="clickGraphMask"
-  >
-    <div class="rel-graph-loading-message">
-      <svg class="c-graph-loading-icon" aria-hidden="true"><use xlink:href="#icon-lianjiezhong"></use></svg>
-      Loading...
+    <div
+            class="rg-graph-loading"
+            :class="{'rg-graph-loading-hide': !options.graphLoading}"
+            @click="clickGraphMask"
+    >
+        <div class="rg-graph-loading-message">
+            <RGIcons icon-name="icon-lianjiezhong" class-name="rg-graph-loading-icon"/>
+            {{ options.graphLoadingText || 'Loading...' }}
+        </div>
     </div>
-  </div>
 </template>

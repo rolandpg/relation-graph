@@ -1,717 +1,1401 @@
 import {RelationGraphWith9EasyView} from './RelationGraphWith9EasyView';
 import {
-  JsonLineTemplate, RGEventNames, RGJunctionPoint,
-  RGLine,
-  RGLink,
-  RGNode,
-  RGResizeHandlePosition,
-  RGSelectionView,
-  RGUserEvent,
-  RGWidgetPosition
-} from '../types';
-import {devLog, isSupportTouch} from '../utils/RGCommon';
-import {json2Line} from "./RGLink";
+    JsonLineLike,
+    RGCtrlPointForLine44,
+    RGEventNames,
+    RGFakeLine,
+    RGJunctionPoint,
+    RGLine,
+    RGLineConnectEventHandler,
+    RGLineShape,
+    RGLineVertexBeDroppedEventHandler,
+    RGNode,
+    RGResizeHandlePosition,
+    RGUserEvent
+} from '../../types';
+import {devLog, getClientCoordinate, isInputFocused} from '../utils/RGCommon';
+import RGDragUtils from "../utils/RGDragUtils";
+import {clearSamePoint, handleDirections, LVLineJunctionPoint} from "../utils/line/RGLinePathUtils";
+import {getPointsByPath, updateLinePoints} from "../utils/line/RGLinePath";
+import {getNodeDistance} from "../utils/RGGraphMath";
+
+/**
+ * Capability extension class related to the editor of the relation-graph component
+ */
 export class RelationGraphWith91Editing extends RelationGraphWith9EasyView {
-  setEditingNodes(nodes: RGNode[]) {
-    this.options.editingController.nodes.forEach(node => {
-      node.selected = false;
-    });
-    this.options.editingController.nodes.splice(0, this.options.editingController.nodes.length);
-    this.options.editingController.nodes.push(...nodes);
-    this.options.editingController.show = this.options.editingController.nodes.length > 0;
-    this.updateEditingControllerView();
-  }
-  addEditingNode(node: RGNode) {
-    this.options.editingController.nodes.forEach(node => {
-      node.selected = false;
-    });
-    this.options.editingController.show = true;
-    this.options.editingController.nodes.push(node);
-    this.updateEditingControllerView();
-  }
-  removeEditingNode(node: RGNode) {
-    this.options.editingController.nodes.forEach(node => {
-      node.selected = false;
-    });
-    this.options.editingController.nodes.splice(this.options.editingController.nodes.indexOf(node), 1);
-    this.options.editingController.show = this.options.editingController.nodes.length > 0;
-    this.updateEditingControllerView();
-  }
-  toggleEditingNode(node: RGNode) {
-    this.options.editingController.nodes.forEach(node => {
-      node.selected = false;
-    });
-    if (this.options.editingController.nodes.includes(node)) {
-      this.removeEditingNode(node);
-    } else {
-      this.addEditingNode(node);
+    constructor() {
+        super();
     }
-  }
-  updateEditingControllerView() {
-    this.updateEditingLineView();
-    if (!this.options.editingController.show) return;
-    // console.log('this.options.editingController.nodes.length:', this.options.editingController.nodes.length);
-    if (this.options.editingController.nodes.length > 1) this.options.editingController.nodes.forEach(node => {
-      node.selected = true;
-    });
-    let minX = 9999999;
-    let minY = 9999999;
-    let maxX = -9999999;
-    let maxY = -9999999;
-    for (const node of this.options.editingController.nodes) {
-      if (node.x < minX) minX = node.x;
-      if (node.y < minY) minY = node.y;
-      if ((node.x + node.el.offsetWidth) > maxX) maxX = node.x + node.el.offsetWidth;
-      if ((node.y + node.el.offsetHeight) > maxY) maxY = node.y + node.el.offsetHeight;
-    }
-    const padding = this.options.editingController.nodes.length > 1 ? 5 : 0;
-    const zoomRate = (this.options.canvasZoom! / 100);
-    const viewX = minX === 9999999 ? 0 : minX;
-    const viewY = minY === 9999999 ? 0 : minY;
-    let viewWith = (maxX - minX);
-    let viewHeight = (maxY - minY);
-    if (viewWith < 0) viewWith = 0;
-    if (viewHeight < 0) viewHeight = 0;
-    if (viewWith > 0 && viewHeight > 0) {
-      const startCoordinateOnView = this.getViewPointByCanvasPoint({
-        x: viewX,
-        y: viewY
-      });
-      // const _base_position = this.getBoundingClientRect();
-      // console.log('startCoordinateOnView:', startCoordinateOnView.x, startCoordinateOnView.y);
-      this.options.editingController.x = startCoordinateOnView.x - padding * zoomRate;
-      this.options.editingController.y = startCoordinateOnView.y - padding * zoomRate;
-      this.options.editingController.width = viewWith * zoomRate + padding * 2 * zoomRate;
-      this.options.editingController.height = viewHeight * zoomRate + padding * 2 * zoomRate;
-    } else {
-      this.options.editingController.show = false;
-    }
-    this.dataUpdated();
-  }
-  protected _getEventPoint(e: RGUserEvent) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const point = {
-      x: e.clientX,
-      y: e.clientY
-    };
-    if (isSupportTouch(e)) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const touches = e.touches || e.targetTouches;
-      if (!touches) {
-        throw new Error('error targetTouches');
-      }
-      point.x = touches[0].clientX;
-      point.x = touches[0].clientY;
-    }
-    const relMapBox = this.getBoundingClientRect();
-    // console.log('xxxxxrelMapBox:', point.x - relMapBox.x, point.y - relMapBox.y);
-    return {
-      x: point.x - relMapBox.x,
-      y: point.y - relMapBox.y
-    };
-  }
-  protected _onResizing;
-  protected _onResizeEnd;
-  protected _startPoint = {x:0,y:0};
-  protected _startSize = {x:0,y:0,width:0,height:0};
-  protected _resizeType: RGResizeHandlePosition = 'l';
-  protected nodeStartSizeMap = new WeakMap<RGNode, any>();
-  protected resizeMiniLimit = { width: 20, height: 20};
-  onResizeStart(type:RGResizeHandlePosition, e: RGUserEvent) {
-    // console.log('onResizeStart:', type);
-    this._resizeType = type;
-    this._startPoint = this._getEventPoint(e);
-    this._startSize.x = this.options.editingController.x;
-    this._startSize.y = this.options.editingController.y;
-    this._startSize.width = this.options.editingController.width;
-    this._startSize.height = this.options.editingController.height;
-    for (const node of this.options.editingController.nodes) {
-      this.nodeStartSizeMap.set(node, {
-        x: node.x,
-        y: node.y,
-        width: node.el.offsetWidth,
-        height: node.el.offsetHeight
-      });
-      // console.log('===nodeStartSize:', this.nodeStartSizeMap[node].x);
-    }
-    if (this._onResizing) this.$dom.removeEventListener('mousemove', this._onResizing);
-    if (this._onResizeEnd) this.$dom.removeEventListener('mouseup', this._onResizeEnd);
-    this._onResizing = this.onResizing.bind(this);
-    this._onResizeEnd = this.onResizeEnd.bind(this);
-    this.$dom.addEventListener('mousemove', this._onResizing);
-    this.$dom.addEventListener('mouseup', this._onResizeEnd);
-    this.emitEvent(RGEventNames.onResizeStart, this.options.editingController.nodes);
-  }
-  onResizing(e: RGUserEvent) {
-    const point = this._getEventPoint(e);
-    // console.log('xxxxxxxxxxx:', point.x, point.y);
-    const buff_x = point.x - this._startPoint.x;
-    const buff_y = point.y - this._startPoint.y;
-    let newWidth = this.options.editingController.width;
-    let newHeight = this.options.editingController.height;
-    // const zoomRate = (this.options.canvasZoom / 100);
-    const zoomRate = 1;
-    if (this._resizeType === 'tl') {
-      this.options.editingController.x = this._startSize.x + buff_x / zoomRate;
-      this.options.editingController.y = this._startSize.y + buff_y / zoomRate;
-      newWidth = this._startSize.width - buff_x / zoomRate;
-      newHeight = this._startSize.height - buff_y / zoomRate;
-    } else if (this._resizeType === 'tr') {
-      this.options.editingController.y = this._startSize.y + buff_y / zoomRate;
-      newWidth = this._startSize.width + buff_x / zoomRate;
-      newHeight = this._startSize.height - buff_y / zoomRate;
-    } else if (this._resizeType === 'bl') {
-      this.options.editingController.x = this._startSize.x + buff_x / zoomRate;
-      newWidth = this._startSize.width - buff_x / zoomRate;
-      newHeight = this._startSize.height + buff_y / zoomRate;
-    } else if (this._resizeType === 'br') {
-      newWidth = this._startSize.width + buff_x / zoomRate;
-      newHeight = this._startSize.height + buff_y / zoomRate;
-    } else if (this._resizeType === 't') {
-      this.options.editingController.y = this._startSize.y + buff_y / zoomRate;
-      newHeight = this._startSize.height - buff_y / zoomRate;
-    } else if (this._resizeType === 'r') {
-      newWidth = this._startSize.width + buff_x / zoomRate;
-    } else if (this._resizeType === 'b') {
-      newHeight = this._startSize.height + buff_y / zoomRate;
-    } else if (this._resizeType === 'l') {
-      this.options.editingController.x = this._startSize.x + buff_x / zoomRate;
-      newWidth = this._startSize.width - buff_x / zoomRate;
-    }
-    if (newWidth < this.resizeMiniLimit.width) newWidth = this.resizeMiniLimit.width;
-    if (newHeight < this.resizeMiniLimit.width) newHeight = this.resizeMiniLimit.width;
-    this.options.editingController.width = newWidth;
-    this.options.editingController.height = newHeight;
-    this._applyResizeScale(e);
-    // console.log('onResizing', buff_x, buff_y);
-    this.dataUpdated();
-  }
-  private _applyResizeScale(e: RGUserEvent) {
-    const scale_x = this.options.editingController.width / this._startSize.width;
-    const scale_y = this.options.editingController.height / this._startSize.height;
-    const startLeftTopPoint = this.getCanvasPointByViewPoint({
-      x: this._startSize.x,
-      y: this._startSize.y
-    });
-    const leftTopPoint = this.getCanvasPointByViewPoint({
-      x: this.options.editingController.x,
-      y: this.options.editingController.y
-    });
-    for (const node of this.options.editingController.nodes) {
-      const nodeStartSize = this.nodeStartSizeMap.get(node);
-      const newWidth = nodeStartSize.width * scale_x;
-      const newHeight = nodeStartSize.height * scale_y;
-      // console.log('nodeStartSize:', this._startSize.x, this._startSize.y, leftTopPoint.x, leftTopPoint.y, scale_x, nodeStartSize.x - startLeftTopPoint.x);
-      const newX = leftTopPoint.x + scale_x * (nodeStartSize.x - startLeftTopPoint.x);
-      const newY = leftTopPoint.y + scale_y * (nodeStartSize.y - startLeftTopPoint.y);
-      const newW = newWidth;
-      const newH = newHeight;
-      let cancelApply = false;
-      if (this.listeners.beforeNodeResize) {
-        cancelApply = this.listeners.beforeNodeResize(node, newX, newY, newW, newH) === false;
-      }
-      if (!cancelApply) {
-        node.x = newX;
-        node.y = newY;
-        node.width = newW;
-        node.height = newH;
-      }
-    }
-    this.updateEditingControllerView();
-  }
-  onResizeEnd(e: RGUserEvent) {
-    const point = this._getEventPoint(e);
-    const buff_x = point.x - this._startPoint.x;
-    const buff_y = point.y - this._startPoint.y;
-    // console.log('onResizeEnd', buff_x, buff_y);
-    this._applyResizeScale(e);
-    this.$dom.removeEventListener('mousemove', this._onResizing);
-    this.$dom.removeEventListener('mouseup', this._onResizeEnd);
-    this._onResizing = null;
-    this._onResizeEnd = null;
-    this.emitEvent(RGEventNames.onResizeEnd, this.options.editingController.nodes, buff_x, buff_y);
-  }
-  protected draggingSelectedNodes(draggedNode: RGNode, buff_x: number, buff_y: number) {
-    // console.log('draggingSelectedNodes', buff_x, buff_y);
-    if (!this.options.editingController.nodes.includes(draggedNode)) {
-      this.updateReferenceLineView(draggedNode, buff_x, buff_y);
-      this.updateEditingLineView();
-      return;
-    }
-    for (const node of this.options.editingController.nodes) {
-      if (node !== draggedNode) {
-        node.x += buff_x;
-        node.y += buff_y;
-      }
-    }
-    this.updateReferenceLineView(draggedNode, buff_x, buff_y);
-    this.updateEditingControllerView();
-  }
-  getNodesInSelectionView(selectionView:RGSelectionView) {
-    const _base_position = this.getBoundingClientRect();
-    const startCoordinateOnCanvas = this.getCanvasCoordinateByClientCoordinate({
-      x: selectionView.x + _base_position.x,
-      y: selectionView.y + _base_position.y
-    });
-    const endCoordinateOnCanvas = this.getCanvasCoordinateByClientCoordinate({
-      x: selectionView.x + selectionView.width + _base_position.x,
-      y: selectionView.y + selectionView.height + _base_position.y
-    });
-    const nodes = [];
-    this.getNodes().forEach(node => {
-      const nodeCenterX = node.x + node.el.offsetWidth / 2;
-      const nodeCenterY = node.y + node.el.offsetHeight / 2;
-      if (nodeCenterX > startCoordinateOnCanvas.x && nodeCenterY > startCoordinateOnCanvas.y) {
-        if (nodeCenterX < endCoordinateOnCanvas.x && nodeCenterY < endCoordinateOnCanvas.y) {
-          nodes.push(node);
-        }
-      }
-    });
-    return nodes;
-  }
-  updateEditingConnectControllerView() {
-    const node = this.options.nodeConnectController.node;
-    const minX = node.x;
-    const minY = node.y;
-    const maxX = node.x + node.el.offsetWidth;
-    const maxY = node.y + node.el.offsetHeight;
-    const padding = 0;
-    const zoomRate = (this.options.canvasZoom! / 100);
-    const viewX = minX;
-    const viewY = minY;
-    const viewWith = (maxX - minX);
-    const viewHeight = (maxY - minY);
-    const startCoordinateOnView = this.getViewPointByCanvasPoint({
-      x: viewX,
-      y: viewY
-    });
-    this.options.nodeConnectController.x = startCoordinateOnView.x - padding * zoomRate;
-    this.options.nodeConnectController.y = startCoordinateOnView.y - padding * zoomRate;
-    this.options.nodeConnectController.width = viewWith * zoomRate + padding * 2 * zoomRate;
-    this.options.nodeConnectController.height = viewHeight * zoomRate + padding * 2 * zoomRate;
-    this.dataUpdated();
-  }
-  setEditingLine(line: RGLine | null, link: RGLink | null) {
-    this.options.editingLineController.link = link;
-    this.options.editingLineController.line = line;
-    this.options.editingLineController.show = link && line ? true : false;
-    this.updateEditingLineView(true);
-  }
-  updateReferenceLineView(draggedNode: RGNode, buff_x: number, buff_y: number) {
-    if (!this.options.showReferenceLine) return;
-    const distanceX = Math.abs(buff_x);
-    const distanceY = Math.abs(buff_y);
-    if (!this.options.editingReferenceLine.show && (distanceX + distanceY) > 0 ) {
-      this.options.editingReferenceLine.show = true;
-    }
-    if (!this.options.editingReferenceLine.show) return;
-    const draggedNodeXStart = draggedNode.x;
-    const draggedNodeXCenter = draggedNode.x + draggedNode.el.offsetWidth / 2;
-    const draggedNodeXEnd = draggedNode.x + draggedNode.el.offsetWidth;
-    const draggedNodeYStart = draggedNode.y;
-    const draggedNodeYCenter = draggedNode.y + draggedNode.el.offsetHeight / 2;
-    const draggedNodeYEnd = draggedNode.y + draggedNode.el.offsetHeight;
 
-    const startOnView = this.getViewPointByCanvasPoint({
-      x: draggedNodeXStart,
-      y: draggedNodeYStart
-    });
-    const centerOnView = this.getViewPointByCanvasPoint({
-      x: draggedNodeXCenter,
-      y: draggedNodeYCenter
-    });
-    const endOnView = this.getViewPointByCanvasPoint({
-      x: draggedNodeXEnd,
-      y: draggedNodeYEnd
-    });
-    let showH = false;
-    let showV = false;
-    for (const node of this.graphData.nodes) {
-      if (node === draggedNode) continue;
-      const nodeXStart = node.x;
-      const nodeXCenter = node.x + node.el.offsetWidth / 2;
-      const nodeXEnd = node.x + node.el.offsetWidth;
-      const nodeYStart = node.y;
-      const nodeYCenter = node.y + node.el.offsetHeight / 2;
-      const nodeYEnd = node.y + node.el.offsetHeight;
-      const buffXStart = Math.abs(draggedNodeXStart - nodeXStart);
-      const buffXCenter = Math.abs(draggedNodeXCenter - nodeXCenter);
-      const buffXEnd = Math.abs(draggedNodeXEnd - nodeXEnd);
-      const buffYStart = Math.abs(draggedNodeYStart - nodeYStart);
-      const buffYCenter = Math.abs(draggedNodeYCenter - nodeYCenter);
-      const buffYEnd = Math.abs(draggedNodeYEnd - nodeYEnd);
-      const matchDistance = 3;
-      if (buffXCenter < 800 && buffYCenter < 800) {
-        if (!showV && buffXCenter < matchDistance) {
-          const toPoint = this.getViewPointByCanvasPoint({
-            x: nodeXCenter,
-            y: nodeYCenter
-          });
-          this.options.editingReferenceLine.v_x = centerOnView.x;
-          this.options.editingReferenceLine.v_y = centerOnView.y > toPoint.y ? toPoint.y : centerOnView.y;
-          this.options.editingReferenceLine.v_height = Math.round(Math.abs(centerOnView.y - toPoint.y));
-          showV = true;
+    /**
+     * Set the nodes being edited
+     * - Set to null or an empty array to cancel all nodes being edited
+     * - After setting, the position and size of the editing controller (<RGEditingNodeController>) will be automatically updated. If there are no editing nodes, the controller will be hidden.
+     * @param nodes
+     *
+     */
+    setEditingNodes(nodes: RGNode[] | null) {
+        if (nodes === null || nodes.length === 0) {
+            this.dataProvider.setEditingNodes([]);
+        } else {
+            const nodeIds = nodes.map(n => n.id);
+            const rgNodes = this.getNodes().filter(n => nodeIds.includes(n.id));
+            this.dataProvider.setEditingNodes(rgNodes);
         }
-        if (!showV && buffXStart < matchDistance) {
-          const toPoint = this.getViewPointByCanvasPoint({
-            x: nodeXStart,
-            y: nodeYCenter
-          });
-          this.options.editingReferenceLine.v_x = startOnView.x;
-          this.options.editingReferenceLine.v_y = centerOnView.y > toPoint.y ? toPoint.y : centerOnView.y;
-          this.options.editingReferenceLine.v_height = Math.round(Math.abs(centerOnView.y - toPoint.y));
-          showV = true;
-        }
-        if (!showV && buffXEnd < matchDistance) {
-          const toPoint = this.getViewPointByCanvasPoint({
-            x: nodeXEnd,
-            y: nodeYCenter
-          });
-          this.options.editingReferenceLine.v_x = endOnView.x;
-          this.options.editingReferenceLine.v_y = centerOnView.y > toPoint.y ? toPoint.y : centerOnView.y;
-          this.options.editingReferenceLine.v_height = Math.round(Math.abs(centerOnView.y - toPoint.y));
-          showV = true;
-        }
-        if (!showH && buffYCenter < matchDistance) {
-          const toPoint = this.getViewPointByCanvasPoint({
-            x: nodeXCenter,
-            y: nodeYCenter
-          });
-          this.options.editingReferenceLine.h_y = centerOnView.y;
-          this.options.editingReferenceLine.h_x = centerOnView.x > toPoint.x ? toPoint.x : centerOnView.x;
-          this.options.editingReferenceLine.h_width = Math.round(Math.abs(centerOnView.x - toPoint.x));
-          showH = true;
-        }
-        if (!showH && buffYStart < matchDistance) {
-          const toPoint = this.getViewPointByCanvasPoint({
-            x: nodeXCenter,
-            y: nodeYStart
-          });
-          this.options.editingReferenceLine.h_y = startOnView.y;
-          this.options.editingReferenceLine.h_x = centerOnView.x > toPoint.x ? toPoint.x : centerOnView.x;
-          this.options.editingReferenceLine.h_width = Math.round(Math.abs(centerOnView.x - toPoint.x));
-          showH = true;
-        }
-        if (!showH && buffYEnd < matchDistance) {
-          const toPoint = this.getViewPointByCanvasPoint({
-            x: nodeXCenter,
-            y: nodeYEnd
-          });
-          this.options.editingReferenceLine.h_y = endOnView.y;
-          this.options.editingReferenceLine.h_x = centerOnView.x > toPoint.x ? toPoint.x : centerOnView.x;
-          this.options.editingReferenceLine.h_width = Math.abs(centerOnView.x - toPoint.x);
-          showH = true;
-        }
-        if (showH && showV) {
-          break;
-        }
-      }
+        this._updateEditingControllerView();
+        this._dataUpdated();
     }
-    this.options.editingReferenceLine.directionH = showH;
-    this.options.editingReferenceLine.directionV = showV;
-  }
-  hideEditingLineView() {
-    this.options.editingLineController.show = false;
-  }
-  updateEditingLineView(updateLine49Points = false) {
-    this.updateElementLines();
-    if (!this.options.editingLineController.show) return;
-    const link = this.options.editingLineController.link as RGLink;
-    const line = this.options.editingLineController.line as RGLine;
-    if (!line) {
-      this.options.editingLineController.show = false;
-      return;
-    }
-    const {path, textPosition} = this.createLinePath(link, line, link.relations.indexOf(line));
-    const {startPoint, endPoint} =  this.getStartAndEndPoint(path);
-    // console.log('setEditingLine', points);
 
-    const viewStartPoint = this.getViewPointByCanvasPoint(line.isReverse ? endPoint : startPoint);
-    const viewEndPoint = this.getViewPointByCanvasPoint(line.isReverse ? startPoint : endPoint);
-    this.options.editingLineController.startPoint.x = viewStartPoint.x - 5;
-    this.options.editingLineController.startPoint.y = viewStartPoint.y - 5;
-    this.options.editingLineController.endPoint.x = viewEndPoint.x - 5;
-    this.options.editingLineController.endPoint.y = viewEndPoint.y - 5;
-    const textPoint = this.getViewPointByCanvasPoint(textPosition);
-    const lineDom = this.$canvasDom.querySelector(`g[data-id='${line.id}']`);
-    let textAlignOffsetX = 0;
-    let textAlignOffsetY = 0;
-    let orignLineTextOffsetX = line.textOffset_x || 0;
-    let orignLineTextOffsetY = line.textOffset_y || 0;
-    const scale = this.options.canvasZoom! / 100;
-    if (lineDom) {
-      const textDom: SVGTextElement = lineDom.querySelector(`text.c-rg-line-text`)!;
-      // console.log('this.$canvasDom:line:', textDom);
-      if (textDom) {
-        orignLineTextOffsetX = Math.floor(parseFloat(textDom.getAttribute('x') || '0'));
-        orignLineTextOffsetY = Math.floor(parseFloat(textDom.getAttribute('y') || '0'));
-        const textBox = textDom.getBoundingClientRect();
-        // textPoint = this.getViewPointByCanvasPoint({x: textBox.x, y: textBox.y});
-        const textAnchor = getComputedStyle(textDom).textAnchor;
-        // console.log('this.$canvasDom:line:size', getComputedStyle(textDom).textAnchor, textBox.width, textBox.height);
-        this.options.editingLineController.text.width = textBox.width;
-        this.options.editingLineController.text.height = textBox.height;
+    /**
+     * Add a node to the editing nodes
+     * @param node
+     */
+    addEditingNode(node: RGNode) {
+        const rgNode = this.getNodeById(node.id);
+        if (!rgNode) {
+            throw new Error('Node not found: ' + node.id);
+        }
+        this.dataProvider.setEditingNodes(this.getOptions().editingController.nodes.concat(node));
+        this._updateEditingControllerView();
+        this._dataUpdated();
+    }
 
-        textAlignOffsetY = -textBox.height / 2;
-        if (textAnchor === 'start') {
-          textAlignOffsetX = 0;
-        } else if (textAnchor === 'end') {
-          textAlignOffsetX = -this.options.editingLineController.text.width;
-        } else { // textAnchor === 'middle'
-          textAlignOffsetX = (-this.options.editingLineController.text.width / 2);
-        }
-      } else {
-        this.options.editingLineController.text.width = 20;
-        this.options.editingLineController.text.height = 10;
-        textAlignOffsetX = -this.options.editingLineController.text.width / 2;
-      }
+    /**
+     * Remove a node from the editing nodes
+     * @param node
+     */
+    removeEditingNode(node: RGNode) {
+        this.dataProvider.setEditingNodes(this.getOptions().editingController.nodes.filter(n => n.id !== node.id));
+        this._updateEditingControllerView();
+        this._dataUpdated();
     }
-    this.options.editingLineController.text.width += 40;
-    this.options.editingLineController.text.height += 10;
-    this.options.editingLineController.text.x = textPoint.x + textAlignOffsetX + (orignLineTextOffsetX) * scale - 20;
-    this.options.editingLineController.text.y = textPoint.y + textAlignOffsetY + (orignLineTextOffsetY) * scale - 10;
-  }
-  private getStartAndEndPoint(svgPath: string) {
-    const commands = svgPath.match(/[a-zA-Z][^a-zA-Z]*/g);
-    let currentX = 0;
-    let currentY = 0;
-    let startX = 0;
-    let startY = 0;
-    let controlX1 = 0;
-    let controlY1 = 0;
-    let controlX2 = 0;
-    let controlY2 = 0;
-    let isDrawing = false;
-    const startPoint = {x:0,y:0};
-    const endPoint = {x:0,y:0};
-    for (const command of commands) {
-      const parts = command.trim().split(/[ ,]+/);
-      const type = parts[0].toUpperCase();
-      const isRelative = parts[0] === parts[0].toLowerCase();
-      // console.log('command', type, parts.join(','));
-      switch (type) {
-      case 'M':
-        currentX =  this.getPointValue(startX, parts[1], isRelative) + this.easyViewOffset.x;
-        currentY =  this.getPointValue(startY, parts[2], isRelative) + this.easyViewOffset.y;
-        startX = currentX;
-        startY = currentY;
-        break;
-      case 'L':
-        currentX =  this.getPointValue(startX, parts[1], isRelative) + this.easyViewOffset.x;
-        currentY =  this.getPointValue(startY, parts[2], isRelative) + this.easyViewOffset.y;
-        break;
-      case 'C':
-        controlX1 = this.getPointValue(startX, parts[1], isRelative);
-        controlY1 = this.getPointValue(startY, parts[2], isRelative);
-        controlX2 = this.getPointValue(startX, parts[3], isRelative);
-        controlY2 = this.getPointValue(startY, parts[4], isRelative);
-        currentX = this.getPointValue(startX, parts[5], isRelative);
-        currentY = this.getPointValue(startY, parts[6], isRelative);
-        startX = currentX;
-        startY = currentY;
-        break;
-      case 'Q':
-        controlX1 = this.getPointValue(startX, parts[1], isRelative);
-        controlY1 = this.getPointValue(startY, parts[2], isRelative);
-        currentX = this.getPointValue(startX, parts[3], isRelative);
-        currentY = this.getPointValue(startY, parts[4], isRelative);
-        startX = currentX;
-        startY = currentY;
-        break;
-      case 'V':
-        currentY = this.getPointValue(startY, parts[1], isRelative);
-        startY = currentY;
-        break;
-      case 'H':
-        currentX = this.getPointValue(startX, parts[1], isRelative);
-        startX = currentX;
-        break;
-      case 'Z':
-        isDrawing = false;
-        break;
-      default:
-        devLog(`Unsupported command: ${type}`);
-      }
-      if (command === commands[0]) {
-        startPoint.x = currentX;
-        startPoint.y = currentY;
-      }
-      if (command === commands[commands.length - 1]) {
-        endPoint.x = currentX;
-        endPoint.y = currentY;
-      }
-    }
-    return {
-      startPoint,
-      endPoint
-    };
-  }
-  private _currentCreatingLineIsReverse = false;
-  startMoveLineVertex(type:'start'|'end', $event:RGUserEvent) {
-    $event.stopPropagation();
-    // console.log('DragLine start:', type);
-    const link = this.options.editingLineController.link as RGLink;
-    const line = this.options.editingLineController.line as RGLine;
-    let fromNode = link.fromNode;
-    let toNode;
-    this.setEditingLine(null, null);
-    this.removeLine(link, line);
-    this._currentCreatingLineIsReverse = false;
-    const {fromJunctionPoint, fromJuctionPointOffsetX, fromJuctionPointOffsetY, toJunctionPoint, toJuctionPointOffsetX, toJuctionPointOffsetY} = this.options.newLinkTemplate;
-    if (line.lineShape === 49) {
-      line.lineShape = 44;
-    }
-    if (type === 'start') {
-      line.fromJuctionPointOffsetX = 0;
-      line.fromJuctionPointOffsetY = 0;
-      // console.log('[from-start]move end:', type);
-      if (line.isReverse) {
-        this._currentCreatingLineIsReverse = true;
-      } else {
-        fromNode = link.toNode;
-        line.isReverse = true;
-      }
-    } else {
-      line.toJuctionPointOffsetX = 0;
-      line.toJuctionPointOffsetY = 0;
-      // console.log('[from-start]move end:', type);
-      if (line.isReverse) {
-        // console.log('[from-start]end end:reverse:', type);
-        fromNode = link.toNode;
-        line.isReverse = undefined;
-        this._currentCreatingLineIsReverse = true;
-      }
-    }
-    if (this._currentCreatingLineIsReverse) {
-      this.options.newLinkTemplate.fromJunctionPoint = toJunctionPoint;
-      this.options.newLinkTemplate.toJunctionPoint = fromJunctionPoint;
-      // this.options.newLinkTemplate.fromJuctionPointOffsetX = toJuctionPointOffsetX;
-      // this.options.newLinkTemplate.fromJuctionPointOffsetY = toJuctionPointOffsetY;
-      // this.options.newLinkTemplate.toJuctionPointOffsetX = fromJuctionPointOffsetX;
-      // this.options.newLinkTemplate.toJuctionPointOffsetY = fromJuctionPointOffsetY;
-    }
-    // console.log('xxxxxxxxxxxxxx', this._currentCreatingLineIsReverse);
-    this.startCreatingLinePlot($event, {
-      template: line,
-      fromNode: fromNode,
-      onCreateLine: (from, to, newLineTemplate) => {
-        if (to.id) { // 创建的连线的起点一定是节点，但终点可以是空白处，终点没有选择成节点时to不是一个节点，to.id不会有值，这里做了判断，只处理to为节点的情况
-          // console.log('onCreateLine:', from.text, to.text, newLineTemplate.fromJunctionPoint, newLineTemplate.toJunctionPoint);
-          let fromId = from.id;
-          let toId = to.id;
-          if (newLineTemplate && newLineTemplate.isReverse) {
-            fromId = to.id;
-            toId = from.id;
-            newLineTemplate.isReverse = undefined;
-          }
-          const newLineJson = Object.assign(newLineTemplate || {}, {
-            from: fromId,
-            to: toId
-          });
-          this.addLines([newLineJson]);
-        }
-      }
-    });
-  }
-  startCreateLineByTemplate(type: RGWidgetPosition, lineTemplate: JsonLineTemplate|undefined, $event:RGUserEvent) {
-    $event.stopPropagation();
-    // console.log('Create line start:', type);
-    const fromNode = this.options.editingController.nodes[0];
-    const _lineTemplate = lineTemplate || {
-      lineShape: 6,
-      text: 'New Line'
-    };
-    this.startCreatingLinePlot($event, {
-      template: _lineTemplate,
-      fromNode: fromNode,
-      onCreateLine: (from, to, newLineTemplate) => {
-        if (to.id) { // 创建的连线的起点一定是节点，但终点可以是空白处，终点没有选择成节点时to不是一个节点，to.id不会有值，这里做了判断，只处理to为节点的情况
-          // console.log('onCreateLine:', from.text, to.text, newLineTemplate.fromJunctionPoint, newLineTemplate.toJunctionPoint);
-          const newLineJson = Object.assign({}, newLineTemplate, {
-            from: from.id,
-            to: to.id
-          });
-          this.addLines([newLineJson]);
-        }
-      }
-    });
-  }
-  onLineVertexBeDropped(type: RGJunctionPoint, $event:RGUserEvent, junctionPointOffset = {x: 0, y: 0}) {
-    $event.stopPropagation();
-    console.log('Connect end:', this.options.newLineTemplate.isReverse);
-    const node = this.options.nodeConnectController.node;
 
-    if (!this.options.newLinkTemplate.fromNode) {
-      if (this.options.newLineTemplate.isReverse) {
-        this.options.newLineTemplate.toJunctionPoint = type;
-        this.options.newLineTemplate.toJuctionPointOffsetX = junctionPointOffset.x;
-        this.options.newLineTemplate.toJuctionPointOffsetY = junctionPointOffset.y;
-      } else {
-        this.options.newLineTemplate.fromJunctionPoint = type;
-        this.options.newLineTemplate.fromJuctionPointOffsetX = junctionPointOffset.x;
-        this.options.newLineTemplate.fromJuctionPointOffsetY = junctionPointOffset.y;
-      }
-      this.options.newLinkTemplate.fromNode = node;
-    } else {
-      // this.options.newLineTemplate.toJunctionPoint = type;
-      // this.options.newLineTemplate.toJuctionPointOffsetX = junctionPointOffset.x;
-      // this.options.newLineTemplate.toJuctionPointOffsetY = junctionPointOffset.y;
-      if (this.options.newLineTemplate.isReverse) {
-        this.options.newLineTemplate.fromJunctionPoint = type;
-        this.options.newLineTemplate.fromJuctionPointOffsetX = junctionPointOffset.x;
-        this.options.newLineTemplate.fromJuctionPointOffsetY = junctionPointOffset.y;
-      } else {
-        this.options.newLineTemplate.toJunctionPoint = type;
-        this.options.newLineTemplate.toJuctionPointOffsetX = junctionPointOffset.x;
-        this.options.newLineTemplate.toJuctionPointOffsetY = junctionPointOffset.y;
-      }
-      const {fromJunctionPoint, fromJuctionPointOffsetX, fromJuctionPointOffsetY, toJunctionPoint, toJuctionPointOffsetX, toJuctionPointOffsetY} = this.options.newLinkTemplate;
-      //
-      // if (this.options.newLinkTemplate.isReverse) {
-      //     this.options.newLinkTemplate.fromJunctionPoint = toJunctionPoint;
-      //     this.options.newLinkTemplate.toJunctionPoint = fromJunctionPoint;
-      //     this.options.newLinkTemplate.fromJuctionPointOffsetX = toJuctionPointOffsetX;
-      //     this.options.newLinkTemplate.fromJuctionPointOffsetY = toJuctionPointOffsetY;
-      //     this.options.newLinkTemplate.toJuctionPointOffsetX = fromJuctionPointOffsetX;
-      //     this.options.newLinkTemplate.toJuctionPointOffsetY = fromJuctionPointOffsetY;
-      // }
-      this.options.newLinkTemplate.toNodeObject = node;
-      const fromNode = this.options.newLinkTemplate.fromNode;
-      const toNode = node;
-      const lineJson = json2Line(this.options.newLineTemplate);
-      lineJson.from = fromNode ? fromNode.id : '';
-      lineJson.to = toNode ? toNode.id : '';
-      this.emitEvent(RGEventNames.onLineVertexDropped, {lineJson, fromNode, toNode});
-      this.onCreateLine(this.options.newLinkTemplate.fromNode, this.options.nodeConnectController.node);
-      this.stopCreatingLinePlot();
+    /**
+     * Toggle the editing state of a node
+     * @param node
+     */
+    toggleEditingNode(node: RGNode) {
+        const nodeIndex = this.getOptions().editingController.nodes.findIndex(n => n.id === node.id);
+        if (nodeIndex === -1) {
+            this.addEditingNode(node);
+        } else {
+            this.removeEditingNode(node);
+        }
     }
-  }
-  startMoveLineText($event:RGUserEvent) {
-    // $event.stopPropagation();
-    // $event.preventDefault();
-    const startPoint = this._getEventPoint($event);
-    const line: RGLine = this.options.editingLineController.line!;
-    const orignLineTextOffsetX = line.textOffset_x || 0;
-    const orignLineTextOffsetY = line.textOffset_y || 0;
-    const onDragging = (e: MouseEvent) => {
-      const scale = this.options.canvasZoom! / 100;
-      const point = this._getEventPoint(e);
-      const buff_x = point.x - startPoint.x;
-      const buff_y = point.y - startPoint.y;
-      line.textOffset_x = Math.round(orignLineTextOffsetX + buff_x / scale);
-      line.textOffset_y = Math.round(orignLineTextOffsetY + buff_y / scale);
-      this.updateEditingLineView();
-      this._dataUpdated();
-    };
-    const onDragEnd = (e: MouseEvent) => {
-      this.$dom.removeEventListener('mousemove', onDragging);
-      this.$dom.removeEventListener('mouseup', onDragEnd);
-      this._dataUpdated();
-    };
-    this.$dom.addEventListener('mousemove', onDragging);
-    this.$dom.addEventListener('mouseup', onDragEnd);
-  }
+
+    /**
+     * Update the view of the editing controller
+     * - This method is automatically called when the editing nodes are set or changed.
+     */
+    updateEditingControllerView() {
+        this._updateEditingControllerView();
+        this._dataUpdated();
+    }
+
+    /**
+     * @inner
+     * @protected
+     */
+    protected _updateEditingControllerView() {
+        this._updateEditingLineView();
+        this._updateEditingConnectControllerView();
+        const options = this.getOptions();
+        if (!options.editingController.show) return;
+        const {minX, minY, maxX, maxY} = this.getNodesRectBox(options.editingController.nodes);
+        const padding = options.editingController.nodes.length > 1 ? 5 : 0;
+        const scale = this.dataProvider.getCanvasScale();
+        let viewWith = (maxX - minX);
+        let viewHeight = (maxY - minY);
+        if (viewWith < 0) viewWith = 0;
+        if (viewHeight < 0) viewHeight = 0;
+        if (viewWith > 0 && viewHeight > 0) {
+            const startCoordinateOnView = this.getViewXyByCanvasXy({
+                x: minX,
+                y: minY
+            });
+            const x = startCoordinateOnView.x - padding * scale;
+            const y = startCoordinateOnView.y - padding * scale;
+            const width = viewWith * scale + padding * 2 * scale;
+            const height = viewHeight * scale + padding * 2 * scale;
+            this.dataProvider.updateOptions({
+                editingController: {
+                    ...options.editingController,
+                    x,
+                    y,
+                    width,
+                    height
+                }
+            });
+        } else {
+            this.dataProvider.updateOptions({
+                editingController: {...options.editingController, show: false}
+            });
+        }
+    }
+
+    protected _onResizing;
+    protected _onResizeEnd;
+    protected _startPoint = {x: 0, y: 0};
+    protected _startEventCanvasXy = {x: 0, y: 0};
+    protected _startSizeCanvasXy = {x: 0, y: 0};
+    protected _startSize = {x: 0, y: 0, width: 0, height: 0, widthOnCanvas: 0, heightOnCanvas: 0};
+    protected _resizeType: RGResizeHandlePosition = 'l';
+    protected _nodeStartSizeMap = new WeakMap<RGNode, any>();
+    protected resizeMinLimit = {width: 10, height: 10};
+
+    /**
+     * User starts resizing the editing controller
+     * @param type User handles the resize handle position: "t" | "r" | "b" | "l" | "tl" | "tr" | "bl" | "br"
+     * @param e
+     */
+    onResizeStart(type: RGResizeHandlePosition, e: RGUserEvent) {
+        this._resizeType = type;
+        this._startPoint = this.getViewXyByEvent(e);
+        this._startEventCanvasXy = this.getCanvasXyByViewXy(this._startPoint);
+        const options = this.getOptions();
+        this._startSize.x = options.editingController.x;
+        this._startSize.y = options.editingController.y;
+        this._startSizeCanvasXy = this.getCanvasXyByViewXy(this._startSize);
+        this._startSize.width = options.editingController.width;
+        this._startSize.height = options.editingController.height;
+        const scale = this.dataProvider.getCanvasScale();
+        this._startSize.widthOnCanvas = options.editingController.width / scale;
+        this._startSize.heightOnCanvas = options.editingController.height / scale;
+        for (const node of options.editingController.nodes) {
+            this._nodeStartSizeMap.set(node, {
+                x: node.x,
+                y: node.y,
+                width: node.el_W,
+                height: node.el_H
+            });
+        }
+        if (this._onResizing) this.$dom.removeEventListener('mousemove', this._onResizing);
+        if (this._onResizeEnd) this.$dom.removeEventListener('mouseup', this._onResizeEnd);
+        this._resizeDraggingEvent = null;
+        this._resizeDraggingStoped = false;
+        this._onResizing = this.onResizing.bind(this);
+        this._onResizeEnd = this.onResizeEnd.bind(this);
+        this.$dom.addEventListener('mousemove', this._onResizing);
+        this.$dom.addEventListener('mouseup', this._onResizeEnd);
+        const _onResizeRequest = this.onResizingRequest.bind(this);
+        const resizeLoop = () => {
+            _onResizeRequest();
+            this._resizeDraggingTimer = requestAnimationFrame(resizeLoop);
+        }
+        this._resizeDraggingTimer = requestAnimationFrame(resizeLoop);
+        this.emitEvent(RGEventNames.onResizeStart, options.editingController.nodes, e);
+    }
+
+    private _resizeDraggingTimer;
+    private _resizeDraggingEvent: RGUserEvent;
+    private _resizeDraggingStoped = true;
+
+    /**
+     * @inner
+     * @private
+     */
+    private onResizing(e: RGUserEvent) {
+        this._resizeDraggingEvent = e;
+    }
+
+    /**
+     * @inner
+     * @private
+     */
+    private onResizingRequest() {
+        if (!this._resizeDraggingEvent || this._resizeDraggingStoped) {
+            return;
+        }
+        const draggingEventXy = this.getViewXyByEvent(this._resizeDraggingEvent);
+        this.canvasAutoMoving(draggingEventXy);
+        const startEventXyOnView = this.getViewXyByCanvasXy(this._startEventCanvasXy);
+        const startSizeXyOnView = this.getViewXyByCanvasXy(this._startSizeCanvasXy);
+        const buff_x = draggingEventXy.x - startEventXyOnView.x;
+        const buff_y = draggingEventXy.y - startEventXyOnView.y;
+        const options = this.getOptions();
+        let newWidth = options.editingController.width;
+        let newHeight = options.editingController.height;
+        let newX = options.editingController.x;
+        let newY = options.editingController.y;
+        const scale = this.dataProvider.getCanvasScale();
+        if (this._resizeType === 'tl') {
+            newX = startEventXyOnView.x + buff_x;
+            newY = startEventXyOnView.y + buff_y;
+            newWidth = this._startSize.widthOnCanvas * scale - buff_x;
+            newHeight = this._startSize.heightOnCanvas * scale - buff_y;
+        } else if (this._resizeType === 'tr') {
+            newY = startEventXyOnView.y + buff_y;
+            newX = startSizeXyOnView.x;
+            newWidth = this._startSize.widthOnCanvas * scale + buff_x;
+            newHeight = this._startSize.heightOnCanvas * scale - buff_y;
+        } else if (this._resizeType === 'bl') {
+            newX = startEventXyOnView.x + buff_x;
+            newY = startSizeXyOnView.y;
+            newWidth = this._startSize.widthOnCanvas * scale - buff_x;
+            newHeight = this._startSize.heightOnCanvas * scale + buff_y;
+        } else if (this._resizeType === 'br') {
+            newX = startSizeXyOnView.x;
+            newY = startSizeXyOnView.y;
+            newWidth = this._startSize.widthOnCanvas * scale + buff_x;
+            newHeight = this._startSize.heightOnCanvas * scale + buff_y;
+        } else if (this._resizeType === 't') {
+            newY = startEventXyOnView.y + buff_y;
+            newHeight = this._startSize.heightOnCanvas * scale - buff_y;
+        } else if (this._resizeType === 'r') {
+            newX = startSizeXyOnView.x;
+            newWidth = this._startSize.widthOnCanvas * scale + buff_x;
+        } else if (this._resizeType === 'b') {
+            newHeight = this._startSize.heightOnCanvas * scale + buff_y;
+            newY = startSizeXyOnView.y;
+        } else if (this._resizeType === 'l') {
+            newX = startEventXyOnView.x + buff_x;
+            newWidth = this._startSize.widthOnCanvas * scale - buff_x;
+        }
+        if (newWidth < this.resizeMinLimit.width) newWidth = this.resizeMinLimit.width;
+        if (newHeight < this.resizeMinLimit.width) newHeight = this.resizeMinLimit.height;
+        this.dataProvider.updateOptions({
+            editingController: {
+                ...options.editingController,
+                x: newX,
+                y: newY,
+                width: newWidth,
+                height: newHeight
+            }
+        });
+        this._applyResizeScale(this._resizeDraggingEvent);
+        this._updateEditingControllerView();
+        this._dataUpdated();
+    }
+    /**
+     * @inner
+     * @private
+     */
+    private _applyResizeScale(e: RGUserEvent) {
+        const options = this.getOptions();
+        const scale = this.dataProvider.getCanvasScale();
+        const scale_x = options.editingController.width / scale / this._startSize.widthOnCanvas;
+        const scale_y = options.editingController.height / scale / this._startSize.heightOnCanvas;
+        const startLeftTopPoint = this._startSizeCanvasXy;
+        const leftTopPoint = this.getCanvasXyByViewXy({
+            x: options.editingController.x,
+            y: options.editingController.y
+        });
+        let allowResizeWidth = true;
+        let allowResizeHeight = true;
+        if (this._resizeType === 't' || this._resizeType === 'b') {
+            allowResizeWidth = false;
+        } else if (this._resizeType === 'r' || this._resizeType === 'l') {
+            allowResizeHeight = false;
+        }
+        for (const node of options.editingController.nodes) {
+            const nodeStartSize = this._nodeStartSizeMap.get(node);
+            const newWidth = nodeStartSize.width * scale_x;
+            const newHeight = nodeStartSize.height * scale_y;
+            const newX = leftTopPoint.x + scale_x * (nodeStartSize.x - startLeftTopPoint.x);
+            const newY = leftTopPoint.y + scale_y * (nodeStartSize.y - startLeftTopPoint.y);
+            const newW = newWidth;
+            const newH = newHeight;
+            const cancelApply = this.emitEvent(RGEventNames.beforeNodeResize, node, newX, newY, newW, newH) === false;
+            if (!cancelApply) {
+                if (allowResizeWidth) {
+                    // node.x = newX;
+                    // node.width = newW;
+                    // node.el_W = newW;
+                    this.dataProvider.updateNode(node.id, {
+                        x: newX,
+                        width: newW,
+                        el_W: newW
+                    });
+                }
+                if (allowResizeHeight) {
+                    // node.y = newY;
+                    // node.height = newH;
+                    // node.el_H = newH;
+                    this.dataProvider.updateNode(node.id, {
+                        y: newY,
+                        height: newH,
+                        el_H: newH
+                    });
+                }
+                // devLog('ResizeNode:', node.id, newW, newH, scale_x, scale_y);
+            }
+        }
+    }
+    /**
+     * @inner
+     * @private
+     */
+    private onResizeEnd(e: RGUserEvent) {
+        cancelAnimationFrame(this._resizeDraggingTimer);
+        this._resizeDraggingStoped = true;
+        const point = this.getViewXyByEvent(e);
+        const buff_x = point.x - this._startPoint.x;
+        const buff_y = point.y - this._startPoint.y;
+        // console.log('onResizeEnd', buff_x, buff_y);
+        this._applyResizeScale(e);
+        this.$dom.removeEventListener('mousemove', this._onResizing);
+        this.$dom.removeEventListener('mouseup', this._onResizeEnd);
+        this._onResizing = null;
+        this._onResizeEnd = null;
+        devLog('onResizeEnd:', this.getOptions().editingController.nodes, buff_x, buff_y);
+        this.emitEvent(RGEventNames.onResizeEnd, this.getOptions().editingController.nodes, buff_x, buff_y, e);
+    }
+    /**
+     * When dragging a node, update the position of the dragged node and other nodes being edited
+     * - This method is called internally by relation-graph and does not need to be called by the user
+     * @inner
+     * @private
+     */
+    protected draggingSelectedNodes(draggedNode: RGNode, newX: number, newY: number, buff_x: number, buff_y: number) {
+        const fixedInfo = this.updateReferenceLineView(draggedNode, newX, newY, buff_x, buff_y);
+        if (fixedInfo) {
+            const {showV, fixedX, showH, fixedY} = fixedInfo;
+            if (showV) {
+                buff_x += (fixedX - newX);
+                newX = fixedX;
+            }
+            if (showH) {
+                buff_y += (fixedY - newY);
+                newY = fixedY;
+            }
+        }
+        const options = this.getOptions();
+        if (!options.editingController.nodes.includes(draggedNode)) {
+            this.dataProvider.updateNode(draggedNode.id, {x: newX, y: newY});
+            this._updateEditingLineView();
+        } else {
+            for (const node of options.editingController.nodes) {
+                const nodeXYBeforeDrag = this._nodeXYMappingBeforeDrag[node.id];
+                if (nodeXYBeforeDrag) {
+                    // node.x = nodeXYBeforeDrag.x + buff_x;
+                    // node.y = nodeXYBeforeDrag.y + buff_y;
+                    this.dataProvider.updateNode(node.id, {
+                        x: nodeXYBeforeDrag.x + buff_x,
+                        y: nodeXYBeforeDrag.y + buff_y
+                    });
+                }
+            }
+            this._updateEditingControllerView();
+        }
+    }
+    /**
+     * @inner
+     * @private
+     */
+    protected _updateEditingConnectControllerView() {
+        const options = this.getOptions();
+        if (!options.nodeConnectController.show) {
+            return;
+        }
+        const node = options.nodeConnectController.node;
+        const minX = node.x;
+        const minY = node.y;
+        const maxX = node.x + node.el_W;
+        const maxY = node.y + node.el_H;
+        const padding = 0;
+        const scale = this.dataProvider.getCanvasScale();
+        const viewX = minX;
+        const viewY = minY;
+        const viewWith = (maxX - minX);
+        const viewHeight = (maxY - minY);
+        const startCoordinateOnView = this.getViewXyByCanvasXy({
+            x: viewX,
+            y: viewY
+        });
+        this.dataProvider.updateOptions({
+            nodeConnectController: {
+                ...options.nodeConnectController,
+                x: startCoordinateOnView.x - padding * scale,
+                y: startCoordinateOnView.y - padding * scale,
+                width: viewWith * scale + padding * 2 * scale,
+                height: viewHeight * scale + padding * 2 * scale
+            }
+        });
+    }
+
+    /**
+     * Set the line being edited
+     * - When set to null, the line being edited is canceled
+     * - When the line being edited is not null, the <RGEditingLineController> controller will automatically display and update its position
+     * @param line The line being edited
+     */
+    setEditingLine(line: RGLine | null) {
+        this.dataProvider.setEditingLine(line);
+        this._updateEditingLineView();
+        this._dataUpdated();
+    }
+    /**
+     * @inner
+     * @private
+     */
+    private updateReferenceLineView(draggedNode: RGNode, newX: number, newY: number, buff_x: number, buff_y: number) {
+        const options = this.getOptions();
+        if (!options.showReferenceLine) return;
+        if (!options.editingReferenceLine.show) {
+            const distanceX = Math.abs(buff_x);
+            const distanceY = Math.abs(buff_y);
+            if ((distanceX + distanceY) > 2) {
+                this.dataProvider.updateOptions({
+                    editingReferenceLine: {
+                        ...options.editingReferenceLine,
+                        show: true
+                    }
+                });
+            }
+        }
+        if (!options.editingReferenceLine.show) return;
+        const draggedNodeXStart = newX;
+        const draggedNodeWidth = draggedNode.el_W;
+        const draggedNodeHeight = draggedNode.el_H;
+        const draggedNodeXCenter = newX + draggedNodeWidth / 2;
+        const draggedNodeXEnd = newX + draggedNodeWidth;
+        const draggedNodeYStart = newY;
+        const draggedNodeYCenter = newY + draggedNodeHeight / 2;
+        const draggedNodeYEnd = newY + draggedNodeHeight;
+        const centerOnView = this.getViewXyByCanvasXy({
+            x: draggedNodeXCenter,
+            y: draggedNodeYCenter
+        });
+        let showH = false;
+        let showV = false;
+        let fixedX = 0;
+        let fixedY = 0;
+        const nearNodes = this.getNodes().filter(n => {
+            if (this._nodeXYMappingBeforeDrag[n.id]) return false;
+            return Math.abs(n.x - draggedNodeXCenter) < 600 && Math.abs(n.y - draggedNodeYCenter) < 600;
+        });
+        nearNodes.sort((a, b) => {
+            const distanceToDraggingNodeA = getNodeDistance(
+                draggedNodeXCenter,
+                draggedNodeYCenter,
+                a.x + a.el_W / 2,
+                a.y + a.el_H / 2
+            );
+            const distanceToDraggingNodeB = getNodeDistance(
+                draggedNodeXCenter,
+                draggedNodeYCenter,
+                b.x + b.el_W / 2,
+                b.y + b.el_H / 2
+            );
+            return distanceToDraggingNodeA < distanceToDraggingNodeB ? -1 : 1;
+        });
+        let {v_x, v_y, v_height, h_x, h_y, h_width} = options.editingReferenceLine;
+        for (const node of nearNodes) {
+            const nodeXStart = node.x;
+            const nodeWidth = node.el_W;
+            const nodeHeight = node.el_H;
+            const nodeXCenter = node.x + nodeWidth / 2;
+            const nodeXEnd = node.x + nodeWidth;
+            const nodeYStart = node.y;
+            const nodeYCenter = node.y + nodeHeight / 2;
+            const nodeYEnd = node.y + nodeHeight;
+            const buffXStart = Math.abs(draggedNodeXStart - nodeXStart);
+            const buffXCenter = Math.abs(draggedNodeXCenter - nodeXCenter);
+            const buffXEnd = Math.abs(draggedNodeXEnd - nodeXEnd);
+            const buffYStart = Math.abs(draggedNodeYStart - nodeYStart);
+            const buffYCenter = Math.abs(draggedNodeYCenter - nodeYCenter);
+            const buffYEnd = Math.abs(draggedNodeYEnd - nodeYEnd);
+            const matchDistance = 5;
+            if (buffXCenter < 800 && buffYCenter < 800) {
+                if (!showV && buffXCenter < matchDistance) {
+                    const toPoint = this.getViewXyByCanvasXy({
+                        x: nodeXCenter,
+                        y: nodeYCenter
+                    });
+                    v_x = toPoint.x;
+                    v_y = centerOnView.y > toPoint.y ? toPoint.y : centerOnView.y;
+                    v_height = Math.round(Math.abs(centerOnView.y - toPoint.y));
+                    showV = true;
+                    fixedX = nodeXCenter - draggedNodeWidth / 2;
+                }
+                if (!showV && buffXStart < matchDistance) {
+                    const toPoint = this.getViewXyByCanvasXy({
+                        x: nodeXStart,
+                        y: nodeYCenter
+                    });
+                    v_x = toPoint.x;
+                    v_y = centerOnView.y > toPoint.y ? toPoint.y : centerOnView.y;
+                    v_height = Math.round(Math.abs(centerOnView.y - toPoint.y));
+                    showV = true;
+                    fixedX = nodeXStart;
+                }
+                if (!showV && buffXEnd < matchDistance) {
+                    const toPoint = this.getViewXyByCanvasXy({
+                        x: nodeXEnd,
+                        y: nodeYCenter
+                    });
+                    v_x = toPoint.x;
+                    v_y = centerOnView.y > toPoint.y ? toPoint.y : centerOnView.y;
+                    v_height = Math.round(Math.abs(centerOnView.y - toPoint.y));
+                    showV = true;
+                    fixedX = nodeXEnd - draggedNodeWidth;
+                }
+                if (!showH && buffYCenter < matchDistance) {
+                    const toPoint = this.getViewXyByCanvasXy({
+                        x: nodeXCenter,
+                        y: nodeYCenter
+                    });
+                    h_y = toPoint.y;
+                    h_x = centerOnView.x > toPoint.x ? toPoint.x : centerOnView.x;
+                    h_width = Math.round(Math.abs(centerOnView.x - toPoint.x));
+                    showH = true;
+                    fixedY = nodeYCenter - draggedNodeHeight / 2;
+                }
+                if (!showH && buffYStart < matchDistance) {
+                    const toPoint = this.getViewXyByCanvasXy({
+                        x: nodeXCenter,
+                        y: nodeYStart
+                    });
+                    h_y = toPoint.y;
+                    h_x = centerOnView.x > toPoint.x ? toPoint.x : centerOnView.x;
+                    h_width = Math.round(Math.abs(centerOnView.x - toPoint.x));
+                    showH = true;
+                    fixedY = nodeYStart;
+                }
+                if (!showH && buffYEnd < matchDistance) {
+                    const toPoint = this.getViewXyByCanvasXy({
+                        x: nodeXCenter,
+                        y: nodeYEnd
+                    });
+                    h_y = toPoint.y;
+                    h_x = centerOnView.x > toPoint.x ? toPoint.x : centerOnView.x;
+                    h_width = Math.abs(centerOnView.x - toPoint.x);
+                    showH = true;
+                    fixedY = nodeYEnd - draggedNodeHeight;
+                }
+                if (showH && showV) {
+                    break;
+                }
+            }
+        }
+        this.dataProvider.updateOptions({
+            editingReferenceLine: {
+                ...options.editingReferenceLine,
+                v_x,
+                v_y,
+                v_height,
+                h_x,
+                h_y,
+                h_width,
+                directionH: showH,
+                directionV: showV,
+            }
+        });
+        if (options.referenceLineAdsorption) {
+            return {
+                showV, fixedX,
+                showH, fixedY
+            }
+        }
+    }
+
+    /**
+     * Hide the editing line view
+     * - Generally used in this scenario: when editing a line, the line editing controller may block the display of the line. When modifying the appearance of the line (such as arrows, etc.), this method can be called to hide the line editing controller view, allowing users to preview the final effect of the line in time.
+     */
+    hideEditingLineView() {
+        this.dataProvider.updateOptions({
+            editingLineController: {
+                ...this.getOptions().editingLineController,
+                show: false
+            }
+        });
+    }
+
+    /**
+     * Update the view of the editing line controller
+     * - This method is automatically called when the editing line is set or changed.
+     */
+    updateEditingLineView() {
+        this._updateEditingLineView();
+        this._dataUpdated();
+    }
+    /**
+     * @inner
+     * @private
+     */
+    protected _updateEditingLineView() {
+        // @ts-ignore
+        this.updateElementLines();
+        const options = this.getOptions();
+        if (!options.editingLineController.show) return;
+        const line = options.editingLineController.line as RGLine;
+        const link = this.getLinkByLine(line);
+        if (!line || line.to === "newRelationTemplate-to") {
+            this.dataProvider.updateOptions({
+                editingLineController: {
+                    ...this.getOptions().editingLineController,
+                    show: false
+                }
+            });
+            return;
+        }
+        let startPoint;
+        let endPoint;
+        let textPositionOnCanvas;
+        const lineDrawInfo = this.createLineDrawInfo(link, line);
+        if (!lineDrawInfo) {
+            this.dataProvider.updateOptions({
+                editingLineController: {
+                    ...this.getOptions().editingLineController,
+                    show: false
+                }
+            });
+            return;
+        }
+        // @ts-ignore
+        if (line.lineShape === RGLineShape.StandardOrthogonal) {
+            let {
+                textPosition,
+                pathData,
+                points,
+                startDirection,
+                endDirection
+            } = lineDrawInfo;
+            textPositionOnCanvas = textPosition;
+            startPoint = points[0];
+            endPoint = points[points.length - 1];
+            // this.dataProvider.updateLine(line.id, {
+            //     ctrlPointsFor44: points
+            // });
+            // points = line.ctrlPointsFor44;
+            const line44Splits: RGCtrlPointForLine44[] = [];
+            for (let i = 0; i < points.length - 1; i++) {
+                const point = points[i];
+                const nextPoint = points[i + 1];
+                const ctrlPoint: RGCtrlPointForLine44 = {
+                    pIndex: i,
+                    optionName: 'cp-' + i,
+                    x: 0,
+                    y: 0,
+                    direction: 'v',
+                    startDirection,
+                    endDirection
+                };
+                if (point.x !== nextPoint.x) {
+                    ctrlPoint.direction = 'h';
+                }
+                const position = this.getViewXyByCanvasXy({
+                    x: (point.x + nextPoint.x) / 2,
+                    y: (point.y + nextPoint.y) / 2,
+                });
+                ctrlPoint.x = position.x;
+                ctrlPoint.y = position.y;
+                line44Splits.push(ctrlPoint);
+            }
+            if (line44Splits.length === 1) {
+            } else if (line44Splits.length === 2) {
+            } else if (line44Splits.length === 3) {
+                const prevPoint = points[0];
+                const currentPoint = points[1];
+                const nextPoint = points[3];
+                if (line44Splits[1].direction === 'v') {
+                    const prevValue = prevPoint.x;
+                    const currentValue = currentPoint.x;
+                    const nextValue = nextPoint.x;
+                    const isCenter = Math.max(prevValue, currentValue, nextValue) !== currentValue && Math.min(prevValue, currentValue, nextValue) !== currentValue;
+                    if (isCenter) {
+                        line44Splits[1].optionName = 'cx';
+                    } else {
+                        const distanceFrom = Math.abs(currentValue - prevValue);
+                        const distanceTo = Math.abs(currentValue - nextValue);
+                        if (distanceFrom >= distanceTo) {
+                            line44Splits[1].optionName = 'td';
+                        } else if (distanceFrom < distanceTo) {
+                            line44Splits[1].optionName = 'fd';
+                        }
+                    }
+                } else {
+                    const prevValue = prevPoint.y;
+                    const currentValue = currentPoint.y;
+                    const nextValue = nextPoint.y;
+                    const isCenter = Math.max(prevValue, currentValue, nextValue) !== currentValue && Math.min(prevValue, currentValue, nextValue) !== currentValue;
+                    if (isCenter) {
+                        line44Splits[1].optionName = 'cy';
+                    } else {
+                        const distanceFrom = Math.abs(currentValue - prevValue);
+                        const distanceTo = Math.abs(currentValue - nextValue);
+                        if (distanceFrom >= distanceTo) {
+                            line44Splits[1].optionName = 'td';
+                        } else if (distanceFrom < distanceTo) {
+                            line44Splits[1].optionName = 'fd';
+                        }
+                    }
+                }
+            } else if (line44Splits.length === 4) {
+                line44Splits[1].optionName = 'fd';
+                line44Splits[2].optionName = 'td';
+            } else if (line44Splits.length === 5) {
+                line44Splits[1].optionName = 'fd';
+                if (line44Splits[2].direction === 'v') {
+                    line44Splits[2].optionName = 'cx';
+                } else {
+                    line44Splits[2].optionName = 'cy';
+                }
+                line44Splits[3].optionName = 'td';
+            }
+            this.dataProvider.updateOptions({
+                editingLineController: {
+                    ...this.getOptions().editingLineController,
+                    line44Splits,
+                    line49Points: points
+                }
+            });
+            // if (!line.ctrlPointsFor49) {
+            //     // line.ctrlPointsFor49 = points;
+            //     this.dataProvider.updateLine(line.id, {
+            //         ctrlPointsFor49: points
+            //     });
+            // }
+            // @ts-ignore
+        } else if (line.lineShape === RGLineShape.HardOrthogonal) {
+            let {
+                textPosition,
+                pathData,
+                points,
+                startDirection,
+                endDirection
+            } = lineDrawInfo;
+            textPositionOnCanvas = textPosition;
+            const line44Splits: RGCtrlPointForLine44[] = [];
+            // line.ctrlPointsFor49 = points;
+            // this.dataProvider.updateLine(line.id, {
+            //     ctrlPointsFor49: points
+            // });
+            points = line.ctrlPointsFor49;
+            startPoint = points[0];
+            endPoint = points[points.length - 1];
+            const ctrlPointsFor49 = points;
+            for (let i = 0; i < ctrlPointsFor49.length - 1; i++) {
+                const point = ctrlPointsFor49[i];
+                const nextPoint = ctrlPointsFor49[i + 1];
+                const ctrlPoint: RGCtrlPointForLine44 = {
+                    pIndex: i,
+                    optionName: 'cp-' + i,
+                    x: 0,
+                    y: 0,
+                    direction: 'v',
+                    startDirection,
+                    endDirection
+                };
+                if (point.x !== nextPoint.x) {
+                    ctrlPoint.direction = 'h';
+                    if (Math.abs(point.x - nextPoint.x) < 15) {
+                        ctrlPoint.hide = true;
+                    }
+                } else {
+                    if (Math.abs(point.y - nextPoint.y) < 15) {
+                        ctrlPoint.hide = true;
+                    }
+                }
+                const position = this.getViewXyByCanvasXy({
+                    x: (point.x + nextPoint.x) / 2,
+                    y: (point.y + nextPoint.y) / 2,
+                });
+                ctrlPoint.x = position.x;
+                ctrlPoint.y = position.y;
+                line44Splits.push(ctrlPoint);
+            }
+            for (let i = 0; i < line44Splits.length; i++) {
+                const prevCtrlPoint = line44Splits[i - 1];
+                const ctrlPoint = line44Splits[i];
+                const nextCtrlPoint = line44Splits[i + 1];
+                if (i === 0) {
+                    if (ctrlPoint.direction === nextCtrlPoint.direction) {
+                        ctrlPoint.hide = true;
+                    }
+                }
+                if (i === line44Splits.length - 1) {
+                    if (ctrlPoint.direction === prevCtrlPoint.direction) {
+                        ctrlPoint.hide = true;
+                    }
+                }
+            }
+            this.dataProvider.updateOptions({
+                editingLineController: {
+                    ...this.getOptions().editingLineController,
+                    line44Splits,
+                    line49Points: ctrlPointsFor49
+                }
+            });
+        } else if (line.lineShape !== 1) {
+            textPositionOnCanvas = lineDrawInfo.textPosition;
+            const linePoints = getPointsByPath(lineDrawInfo.pathData);
+            let ctrlPoint1;
+            let ctrlPoint2;
+            if (line.isReverse) {
+                startPoint = linePoints.endPoint;
+                endPoint = linePoints.startPoint;
+                ctrlPoint1 = this.getViewXyByCanvasXy(linePoints.ctrl1);
+                ctrlPoint2 = this.getViewXyByCanvasXy(linePoints.ctrl2);
+            } else {
+                startPoint = linePoints.startPoint;
+                endPoint = linePoints.endPoint;
+                ctrlPoint1 = this.getViewXyByCanvasXy(linePoints.ctrl1);
+                ctrlPoint2 = this.getViewXyByCanvasXy(linePoints.ctrl2);
+            }
+            this.dataProvider.updateOptions({
+                editingLineController: {
+                    ...this.getOptions().editingLineController,
+                    ctrlPoint1,
+                    ctrlPoint2
+                }
+            });
+        } else {
+            textPositionOnCanvas = lineDrawInfo.textPosition;
+            const path = lineDrawInfo.pathData;
+            const linePoints = getPointsByPath(path);
+            startPoint = linePoints.startPoint;
+            endPoint = linePoints.endPoint;
+        }
+        const viewStartPoint = this.getViewXyByCanvasXy(line.isReverse ? endPoint : startPoint);
+        const viewEndPoint = this.getViewXyByCanvasXy(line.isReverse ? startPoint : endPoint);
+        // options.editingLineController.startPoint.x = viewStartPoint.x;
+        // options.editingLineController.startPoint.y = viewStartPoint.y;
+        // options.editingLineController.endPoint.x = viewEndPoint.x;
+        // options.editingLineController.endPoint.y = viewEndPoint.y;
+
+        this.dataProvider.updateOptions({
+            editingLineController: {
+                ...this.getOptions().editingLineController,
+                startPoint: viewStartPoint,
+                endPoint: viewEndPoint
+            }
+        });
+        const textPoint = this.getViewXyByCanvasXy(textPositionOnCanvas);
+        const lineDom = this.$canvasDom.querySelector(`g[data-id='${line.id}']`);
+        let textAlignOffsetX = 0;
+        let textAlignOffsetY = 0;
+        let orignLineTextOffsetX = line.textOffsetX || 0;
+        let orignLineTextOffsetY = line.textOffsetY || 0;
+        const scale = this.dataProvider.getCanvasScale();
+        let textWidth = 20;
+        let textHeight = 20;
+        if (lineDom) {
+            const textDom: SVGTextElement = lineDom.querySelector(`text.rg-line-text`)!;
+            // console.log('this.$canvasDom:line:', textDom);
+            if (textDom) {
+                orignLineTextOffsetX = Math.floor(parseFloat(textDom.getAttribute('x') || '0'));
+                orignLineTextOffsetY = Math.floor(parseFloat(textDom.getAttribute('y') || '0'));
+                const lineTextLabelDomWidth = textDom.clientWidth;
+                const lineTextLabelDomHeight = textDom.clientHeight;
+                // options.editingLineController.text.width = lineTextLabelDomWidth;
+                // options.editingLineController.text.height = lineTextLabelDomHeight;
+                textWidth = lineTextLabelDomWidth;
+                textHeight = lineTextLabelDomHeight;
+            }
+        }
+        textWidth += 40;
+        textHeight += 10;
+        if (textWidth > 120) {
+            textWidth = 120;
+        }
+        if (textHeight > 20) {
+            textHeight = 20;
+        }
+        // options.editingLineController.text.x = textPoint.x + textAlignOffsetX + (orignLineTextOffsetX) * scale;
+        // options.editingLineController.text.y = textPoint.y + textAlignOffsetY + (orignLineTextOffsetY) * scale;
+        this.dataProvider.updateOptions({
+            editingLineController: {
+                ...this.getOptions().editingLineController,
+                text: {
+                    ...this.getOptions().editingLineController.text,
+                    width: textWidth,
+                    height: textHeight,
+                    x: textPoint.x + textAlignOffsetX + (orignLineTextOffsetX) * scale,
+                    y: textPoint.y + textAlignOffsetY + (orignLineTextOffsetY) * scale,
+                }
+            }
+        });
+    }
+
+    /**
+     * Start dragging the start or end point of the line to reselect the start or end point of the line
+     * - During the process of changing the start or end point of the line, the line will be removed. When reconnecting, you can get the new line information (the new line information id and other attributes will be retained) through onLineConnectEventHandler(or through the onLineBeCreated event of the <RelationGraph> component). You need to complete the data change through graphInstance.addLines([newJsonLine]) to finally complete the modification of the line endpoint.
+     * @param type Choose to drag the start point or end point of the line, 'start' means dragging the start point, 'end' means dragging the end point
+     * @param $event
+     * @param onLineConnectEventHandler Callback function after line connection is completed, you can get the new line information through the parameters, you need to complete the data change through graphInstance.addLines([newJsonLine])
+     *
+     */
+    startMoveLineVertex(type: 'start' | 'end', $event: RGUserEvent, onLineConnectEventHandler: RGLineConnectEventHandler) {
+        $event.stopPropagation();
+        const line = this.getOptions().editingLineController.line as RGLine;
+        const link = this.getLinkByLine(line);
+        let fromNode;
+        let toNode;
+        if (link) {
+            fromNode = link.fromNode
+            toNode = link.toNode
+        } else {
+            const fakeLineConfig = this.generateFakeLineConfig(line as RGFakeLine);
+            if (!fakeLineConfig) {
+                console.warn('[startDragLine]Can not resolve fake line targets:', line);
+                return;
+            }
+            const {from, to} = fakeLineConfig;
+            fromNode = from;
+            toNode = to;
+        }
+        let templateLineStartNode = fromNode;
+        this.dataProvider.setEditingLine(null);
+        if (link) {
+            this.removeLine(line);
+        } else {
+            this.removeFakeLine(line as RGFakeLine);
+        }
+        // console.log('DragLine start:', type, line.isReverse);
+        let movingStart = false;
+        // const {startMarkerId, endMarkerId, fromJunctionPoint, fromJunctionPointOffsetX, fromJunctionPointOffsetY, toJunctionPoint, toJunctionPointOffsetX, toJunctionPointOffsetY} = this.options.newLineTemplate;
+        if (line.lineShape === RGLineShape.HardOrthogonal) {
+            line.lineShape = RGLineShape.StandardOrthogonal;
+        }
+        if (type === 'start') {
+            line.fromJunctionPointOffsetX = 0;
+            line.fromJunctionPointOffsetY = 0;
+            templateLineStartNode = toNode;
+            movingStart = true;
+        } else {
+            line.toJunctionPointOffsetX = 0;
+            line.toJunctionPointOffsetY = 0;
+        }
+        this.startCreatingLinePlot($event, {
+            template: line,
+            fromNode: templateLineStartNode,
+            isReverse: movingStart,
+            onCreateLine: onLineConnectEventHandler
+        });
+    }
+
+    private _startCreateLineFromNodeTime = 0;
+
+    /**
+     * Start creating a line from a specified starting point
+     * - The <RGConnectSource> and <RGConnectTarget> components will use this method, and you can call this method yourself to create a line from a specified node
+     * - It is worth noting that: fromNode can be empty. If it is empty, it will try to automatically find the starting point. The logic is:
+     *     - 1. Determine whether lineTemplate.from is empty. If it is not empty, use the node corresponding to lineTemplate.from as the starting point
+     *     - 2. Find the only node from the currently edited nodes as the starting node.
+     *     - 3. If the starting node still cannot be found, an exception is thrown
+     * - When the user completes the connection of the line, the onLineConnectEventHandler callback will be triggered (or through the onLineBeCreated event of the <RelationGraph> component), and you need to add the line data in the callback, through
+     *
+     * @param fromNode
+     * @param useLineTemplate
+     * @param $event
+     * @param onLineConnectEventHandler
+     */
+    startCreateLineFromNode(fromNode: RGNode | null | undefined, useLineTemplate: JsonLineLike, $event: RGUserEvent, onLineConnectEventHandler: RGLineConnectEventHandler) {
+        $event.stopPropagation();
+        const lineTemplate = JSON.parse(JSON.stringify(useLineTemplate));
+        this._startCreateLineFromNodeTime = Date.now();
+        if (!lineTemplate.from) {
+            if (!fromNode) {
+                const editingNodes = this.getOptions().editingController.nodes;
+                if (editingNodes.length === 1) {
+                    fromNode = editingNodes[0];
+                }
+            }
+            if (fromNode) {
+                lineTemplate.from = fromNode.id;
+                lineTemplate.fromType = fromNode.targetType;
+            }
+        }
+        if (!lineTemplate.from) {
+            console.error(`Error:lineTemplate:`, lineTemplate);
+            throw Error(`Error:startCreateLineByTemplate: lineTemplate must has [fromType, from]`);
+        }
+        const fromTarget = this.resolveTargetRect(lineTemplate.fromType, lineTemplate.from, lineTemplate, {
+            preferLiveTarget: true
+        });
+        if (!fromTarget) {
+            console.error(`Error:fakeTarget[fromType, from]:`, lineTemplate.fromType, lineTemplate.from, lineTemplate);
+            throw Error(`Error:startCreateLineByTemplate: error from fakeTarget[fromType, from]:${lineTemplate.fromType}, ${lineTemplate.from}`);
+        }
+        if (!lineTemplate.lineShape) {
+            lineTemplate.lineShape = 6;
+        }
+        this.startCreatingLinePlot($event, {
+            template: lineTemplate,
+            fromNode: fromTarget,
+            isReverse: false,
+            onCreateLine: onLineConnectEventHandler
+        });
+    }
+
+    /**
+     * When the start or end point of the line is connected to the junction point of a node, this method is called
+     * - This method is called internally by relation-graph and does not need to be called by the user
+     * @param type
+     * @param $event
+     * @param junctionPointOffset
+     * @param onLineVertexBeDropped
+     * @inner
+     */
+    onLineVertexBeDropped(type: RGJunctionPoint, $event: RGUserEvent, junctionPointOffset = {
+        x: 0,
+        y: 0
+    }, onLineVertexBeDropped?: RGLineVertexBeDroppedEventHandler) {
+        $event.stopPropagation();
+        const options = this.getOptions();
+        if (!options.creatingLinePlot) {
+            return;
+        }
+        if (Date.now() - this._startCreateLineFromNodeTime < 500) {
+            return;
+        }
+        // console.log('Connect end:isReverse:', options.newLineTemplate.isReverse);
+        const node = options.nodeConnectController.node;
+        let {
+            toJunctionPoint,
+            toJunctionPointOffsetX,
+            toJunctionPointOffsetY,
+            fromJunctionPoint,
+            fromJunctionPointOffsetX,
+            fromJunctionPointOffsetY
+        } = options.newLineTemplate;
+        if (!options.newLinkTemplate.fromNode) {
+            if (options.newLineTemplate.isReverse) {
+                toJunctionPoint = type;
+                toJunctionPointOffsetX = junctionPointOffset.x;
+                toJunctionPointOffsetY = junctionPointOffset.y;
+            } else {
+                fromJunctionPoint = type;
+                fromJunctionPointOffsetX = junctionPointOffset.x;
+                fromJunctionPointOffsetY = junctionPointOffset.y;
+            }
+            this.dataProvider.updateOptions({
+                newLineTemplate: {
+                    ...this.getOptions().newLineTemplate,
+                    fromJunctionPoint,
+                    fromJunctionPointOffsetX,
+                    fromJunctionPointOffsetY,
+                    toJunctionPoint,
+                    toJunctionPointOffsetX,
+                    toJunctionPointOffsetY
+                },
+                newLinkTemplate: {
+                    ...this.getOptions().newLinkTemplate,
+                    fromNode: node
+                }
+            });
+        } else {
+            if (options.newLineTemplate.isReverse) {
+                fromJunctionPoint = type;
+                fromJunctionPointOffsetX = junctionPointOffset.x;
+                fromJunctionPointOffsetY = junctionPointOffset.y;
+            } else {
+                toJunctionPoint = type;
+                toJunctionPointOffsetX = junctionPointOffset.x;
+                toJunctionPointOffsetY = junctionPointOffset.y;
+            }
+            // this.options.newLinkTemplate.toNodeObject = node;
+            const fromNode = this.getOptions().newLinkTemplate.fromNode;
+            this.dataProvider.updateOptions({
+                newLineTemplate: {
+                    ...this.getOptions().newLineTemplate,
+                    fromJunctionPoint,
+                    fromJunctionPointOffsetX,
+                    fromJunctionPointOffsetY,
+                    toJunctionPoint,
+                    toJunctionPointOffsetX,
+                    toJunctionPointOffsetY
+                },
+                newLinkTemplate: {
+                    ...this.getOptions().newLinkTemplate,
+                    toNodeObject: node
+                }
+            });
+            const toNode = node;
+            try {
+                const onLineVertexDroppedEventParams = {
+                    newLineTemplate: this.getOptions().newLineTemplate,
+                    fromNode,
+                    toNode
+                };
+                this.emitEvent(RGEventNames.onLineVertexDropped, onLineVertexDroppedEventParams);
+                onLineVertexBeDropped && onLineVertexBeDropped(
+                    onLineVertexDroppedEventParams.fromNode,
+                    onLineVertexDroppedEventParams.toNode,
+                    onLineVertexDroppedEventParams.newLineTemplate
+                );
+                const continueCreating = this.onReadyToCreateLine(this.getOptions().newLinkTemplate.fromNode, this.getOptions().nodeConnectController.node);
+                if (continueCreating !== true) {
+                    this.stopCreatingLinePlot();
+                }
+            } catch (e) {
+                this.stopCreatingLinePlot();
+                console.warn('[Custom Reject onCreateLine By Throw Error:', e);
+            }
+        }
+    }
+
+    /**
+     * Start dragging the line text position
+     * - This method is called internally by relation-graph and does not need to be called by the user
+     * @param $event
+     * @param moveEndCallback
+     * @inner
+     */
+    startMoveLineText($event: RGUserEvent, moveEndCallback: () => void) {
+        if (isInputFocused($event)) {
+            return;
+        }
+        // $event.stopPropagation();
+        // $event.preventDefault();
+        const startPoint = this.getViewXyByEvent($event);
+        const options = this.getOptions();
+        const line: RGLine = options.editingLineController.line!;
+        // console.log('startMoveLineText:', line.id);
+        const orignLineTextOffsetX = line.textOffsetX || 0;
+        const orignLineTextOffsetY = line.textOffsetY || 0;
+        let dragged = false;
+        const onDragging = (e: MouseEvent) => {
+            const scale = this.dataProvider.getCanvasScale();
+            const point = this.getViewXyByEvent(e);
+            const buff_x = point.x - startPoint.x;
+            const buff_y = point.y - startPoint.y;
+            if (buff_x > 0 || buff_y > 0) {
+                dragged = true;
+            }
+            const textOffsetX = Math.round(orignLineTextOffsetX + buff_x / scale);
+            const textOffsetY = Math.round(orignLineTextOffsetY + buff_y / scale);
+            this.dataProvider.updateLine(line.id, {
+                textOffsetX,
+                textOffsetY,
+            })
+            this._updateEditingLineView();
+            this._dataUpdated();
+        };
+        const onDragEnd = (e: MouseEvent) => {
+            this.$dom.removeEventListener('mousemove', onDragging);
+            this.$dom.removeEventListener('mouseup', onDragEnd);
+            if (dragged && moveEndCallback) {
+                moveEndCallback();
+            }
+            this._dataUpdated();
+        };
+        this.$dom.addEventListener('mousemove', onDragging);
+        this.$dom.addEventListener('mouseup', onDragEnd);
+    }
+
+    /**
+     * Start dragging the line control point (applicable to lines with curved line types)
+     * - This method is called internally by relation-graph and does not need to be called by the user
+     * @param ctrlPointIndex
+     * @param $event
+     * @param onLinePathChanged
+     * @inner
+     */
+    startMoveLine6CtrlPoint(ctrlPointIndex: number, $event: RGUserEvent, onLinePathChanged: (line: RGLine) => void) {
+        $event.stopPropagation();
+        $event.preventDefault();
+        const options = this.getOptions();
+        const editingLineController = options.editingLineController;
+        const line = editingLineController.line;
+        let ctrlPoints = line.ctrlPoints || [];
+        if (ctrlPoints.length === 0) {
+            ctrlPoints.push({x: 0, y: 0});
+            ctrlPoints.push({x: 0, y: 0});
+        }
+        this.dataProvider.updateLine(line.id, {
+            ctrlPoints
+        });
+        // console.log('startMoveLine6CtrlPoint:line:', line);
+        ctrlPoints = line.ctrlPoints;
+        if (line.isReverse) {
+            ctrlPointIndex = ctrlPoints.length - 1 - ctrlPointIndex;
+        }
+        const scale = this.dataProvider.getCanvasScale();
+        const ctrlPoint = ctrlPoints[ctrlPointIndex];
+        const {x, y} = ctrlPoint;
+        const onDragEnd = () => {
+            // console.log('stopMoveLineCtrlPoint:', ctrlPointIndex);
+            onLinePathChanged(line);
+            this._dataUpdated();
+        }
+        RGDragUtils.startDrag($event, {x: 0, y: 0}, onDragEnd, (offsetX: number, offsetY: number) => {
+            ctrlPoint.x = x + offsetX / scale;
+            ctrlPoint.y = y + offsetY / scale;
+            this.dataProvider.updateLine(line.id, {
+                ctrlPoints
+            });
+            this._updateEditingLineView();
+            // console.log('LineCtrlPoint:moving...', ctrlPointIndex);
+            this._dataUpdated();
+        });
+    }
+
+    /**
+     * Start dragging the line control point (applicable to lines with line type RGLineShape.StandardOrthogonal)
+     * - This method is called internally by relation-graph and does not need to be called by the user
+     * @param split
+     * @param $event
+     * @param onLinePathChanged
+     */
+    startMoveLine44CtrlPoint(split: RGCtrlPointForLine44, $event: RGUserEvent, onLinePathChanged: (line: RGLine) => void) {
+        $event.stopPropagation();
+        $event.preventDefault();
+        const options = this.getOptions();
+        const editingLineController = options.editingLineController;
+        const line = editingLineController.line;
+        // console.log('startMoveLine44CtrlPoint:', line?.lineShape, split.optionName);
+        let ctrlOptionsFor44 = line.ctrlOptionsFor44;
+        if (!ctrlOptionsFor44) {
+            ctrlOptionsFor44 = {cx: 0, cy: 0, fd: 0, td: 0};
+            this.dataProvider.updateLine(line.id, {
+                ctrlOptionsFor44
+            });
+            ctrlOptionsFor44 = line.ctrlOptionsFor44;
+        }
+        const startValue = ctrlOptionsFor44[split.optionName];
+        const cursor = {indexOffset: 0};
+        let startCtrlPointsFor49 = line.ctrlPointsFor49 ? JSON.parse(JSON.stringify(line.ctrlPointsFor49)) : null;
+        const lineSplitCtrlMoving = (offsetX: number, offsetY: number) => {
+            // console.log('lineSplitCtrlMoving:', line?.lineShape, split.optionName);
+            const scale = this.dataProvider.getCanvasScale();
+            if (line.lineShape === RGLineShape.StandardOrthogonal) {
+                if (split.optionName === 'cx') {
+                    const startDirection = 1;// split.startDirection === Position.Left || Position.Top ? 1 : -1;
+                    const newValueX = startValue + offsetX / scale * startDirection;
+                    ctrlOptionsFor44.cx = newValueX;
+                    this.dataProvider.updateLine(line.id, {
+                        ctrlOptionsFor44
+                    });
+                } else if (split.optionName === 'cy') {
+                    const startDirection = 1;// split.startDirection === Position.Left || Position.Top ? 1 : -1;
+                    const newValueY = startValue + offsetY / scale * startDirection;
+                    ctrlOptionsFor44.cy = newValueY;
+                    this.dataProvider.updateLine(line.id, {
+                        ctrlOptionsFor44
+                    });
+                } else if (split.optionName === 'fd') {
+                    const sourceDir = handleDirections[split.startDirection];
+                    const offset = split.direction === 'v' ? offsetX * sourceDir.x : offsetY * sourceDir.y;
+                    ctrlOptionsFor44.fd = startValue + offset / scale;
+                    this.dataProvider.updateLine(line.id, {
+                        ctrlOptionsFor44
+                    });
+                } else if (split.optionName === 'td') {
+                    const targetDir = handleDirections[split.endDirection];
+                    const offset = split.direction === 'v' ? offsetX * targetDir.x : offsetY * targetDir.y;
+                    ctrlOptionsFor44.td = startValue + offset / scale;
+                    this.dataProvider.updateLine(line.id, {
+                        ctrlOptionsFor44
+                    });
+                } else {
+                    if (split.direction === 'v' && Math.abs(offsetX) > 5 || split.direction === 'h' && Math.abs(offsetY) > 5) {
+                        // line.ctrlPointsFor49 = editingLineController.line49Points;
+                        // line.lineShape = 49
+                        const ctrlPointsFor49 = editingLineController.line49Points;
+                        startCtrlPointsFor49 = JSON.parse(JSON.stringify(ctrlPointsFor49));
+                        // console.log(':startCtrlPointsFor49:::', startCtrlPointsFor49);
+                        this.dataProvider.updateLine(line.id, {
+                            ctrlPointsFor49: startCtrlPointsFor49
+                        });
+                        this.dataProvider.updateLine(line.id, {
+                            lineShape: RGLineShape.HardOrthogonal
+                        });
+                    }
+                }
+            } else if (line.lineShape === RGLineShape.HardOrthogonal) {
+                const {newPoints, pointsChanged} = updateLinePoints(
+                    line.ctrlPointsFor49,
+                    startCtrlPointsFor49,
+                    split.pIndex + cursor.indexOffset,
+                    split,
+                    cursor,
+                    offsetX / scale,
+                    offsetY / scale
+                );
+                if (pointsChanged) {
+                    startCtrlPointsFor49 = JSON.parse(JSON.stringify(newPoints));
+                }
+                // line.ctrlPointsFor49 = newPoints
+                this.dataProvider.updateLine(line.id, {
+                    ctrlPointsFor49: newPoints
+                });
+            }
+        }
+        const onDragEnd = () => {
+            if (line.lineShape === RGLineShape.HardOrthogonal) {
+                const newPoints = clearSamePoint(line.ctrlPointsFor49);
+                // line.ctrlPointsFor49 = newPoints
+                this.dataProvider.updateLine(line.id, {
+                    ctrlPointsFor49: newPoints
+                });
+            }
+            this._updateEditingLineView();
+            onLinePathChanged && onLinePathChanged(line);
+            this._dataUpdated();
+        }
+        RGDragUtils.startDrag($event, {x: 0, y: 0}, onDragEnd, (offsetX: number, offsetY: number) => {
+            lineSplitCtrlMoving(offsetX, offsetY);
+            this._updateEditingLineView();
+            this._dataUpdated();
+        });
+    }
+
+    /**
+     * When the start or end point of the line is dropped onto the connection point on the node connection controller (<RGEditingConnectController />), this method is called
+     * - This method is called internally by relation-graph and does not need to be called by the user
+     * @param junctionPoint
+     * @param $event
+     * @param connectBoxDom
+     * @param lineVertexBeDroppedEventHandler
+     * @inner
+     */
+    onLineVertexBeDroppedOnConnectController(junctionPoint: RGJunctionPoint, $event: RGUserEvent, connectBoxDom?: HTMLElement, lineVertexBeDroppedEventHandler?: RGLineVertexBeDroppedEventHandler) {
+        devLog('onLineVertexBeDroppedOnConnectController', junctionPoint, $event, connectBoxDom);
+        $event.stopPropagation();
+        if (!connectBoxDom) {
+            this.onLineVertexBeDropped(junctionPoint, $event, undefined, lineVertexBeDroppedEventHandler);
+            return;
+        }
+        const eventPosition = getClientCoordinate($event);
+        const box = connectBoxDom!.getBoundingClientRect();
+        const leftPoint = { x: box.left, y: box.top + box.height / 2 };
+        const topPoint = { x: box.left + box.width / 2, y: box.top };
+        const rightPoint = { x: box.left + box.width, y: box.top + box.height / 2 };
+        const bottomPoint = { x: box.left + box.width / 2, y: box.top + box.height };
+        let type:LVLineJunctionPoint = LVLineJunctionPoint.left;
+        const offset = { x: 0, y: 0 };
+        if (junctionPoint) {
+            type = junctionPoint as LVLineJunctionPoint;
+            if (type === LVLineJunctionPoint.top) {
+                offset.x =  eventPosition.clientX - bottomPoint.x;
+            } else if (type === LVLineJunctionPoint.bottom) {
+                offset.x =  eventPosition.clientX - bottomPoint.x;
+            } else if (type === LVLineJunctionPoint.right) {
+                offset.y =  eventPosition.clientY - rightPoint.y;
+            } else {
+                offset.y =  eventPosition.clientY - leftPoint.y;
+            }
+        } else {
+            const distanceToLeft = getNodeDistance(eventPosition.clientX, eventPosition.clientY, leftPoint.x, leftPoint.y);
+            const distanceToTop = getNodeDistance(eventPosition.clientX, eventPosition.clientY, topPoint.x, topPoint.y);
+            const distanceToRight = getNodeDistance(eventPosition.clientX, eventPosition.clientY, rightPoint.x, rightPoint.y);
+            const distanceToBottom = getNodeDistance(eventPosition.clientX, eventPosition.clientY, bottomPoint.x, bottomPoint.y);
+            const minDistance = Math.min(distanceToLeft, distanceToTop, distanceToRight, distanceToBottom);
+            if (minDistance === distanceToLeft) {
+                type = LVLineJunctionPoint.left;
+                offset.x =  eventPosition.clientX - leftPoint.x;
+                offset.y =  eventPosition.clientY - leftPoint.y;
+            } else if (minDistance === distanceToTop) {
+                type = LVLineJunctionPoint.top;
+                offset.x =  eventPosition.clientX - topPoint.x;
+                offset.y =  eventPosition.clientY - topPoint.y;
+            } else if (minDistance === distanceToRight) {
+                type = LVLineJunctionPoint.right;
+                offset.x =  eventPosition.clientX - rightPoint.x;
+                offset.y =  eventPosition.clientY - rightPoint.y;
+            } else if (minDistance === distanceToBottom) {
+                type = LVLineJunctionPoint.bottom;
+                offset.x =  eventPosition.clientX - bottomPoint.x;
+                offset.y =  eventPosition.clientY - bottomPoint.y;
+            }
+        }
+        const scale = this.dataProvider.getCanvasScale();
+        offset.x = offset.x / scale;
+        offset.y = offset.y / scale;
+        devLog('onMouseUpWithOffset:', junctionPoint, offset);
+        this.onLineVertexBeDropped(type, $event, offset, lineVertexBeDroppedEventHandler);
+    }
 }
-

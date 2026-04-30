@@ -1,238 +1,129 @@
-import {devLog, getScreenHeight, getScreenWidth} from '../utils/RGCommon';
-import {RGEventNames, RGListeners, RGOptions} from '../types';
-import { RelationGraphWith4Line } from './RelationGraphWith4Line';
-export type RGZoomCenter = {
-  x:number
-  y:number
-};
-export type RGCoordinate = {
-  x:number
-  y:number
-};
+import {devLog} from '../utils/RGCommon';
+import {RGCoordinate, RGEventNames} from '../../types';
+import {RelationGraphWith4Line} from './RelationGraphWith4Line';
+
+export type RGClientXy = RGCoordinate;
+
+/**
+ * Class related to zoom functionality in the relation-graph component
+ */
 export class RelationGraphWith5Zoom extends RelationGraphWith4Line {
-  constructor(options: RGOptions, listeners: RGListeners) {
-    super(options, listeners);
-  }
-
-  zoom(buff:number, userZoomCenter?:RGZoomCenter, e: WheelEvent) {
-    // devLog('[zoom]', buff, 'from:', userZoomCenter);
-    const abortZoom = this.emitEvent(RGEventNames.beforeZoomStart, this.options.canvasZoom, buff, e);
-    devLog('[zoom]', 'abortZoom:', abortZoom);
-    if (abortZoom === true) {
-      return;
-    } else {
-      if ((this.options.canvasZoom + buff) < this.options.minCanvasZoom) {
-        devLog('zoom:reset zoom=10');
-        buff = this.options.minCanvasZoom - this.options.canvasZoom;
-      }
+    constructor() {
+        super();
     }
-    const oldZoom = this.options.canvasZoom;
-    const __new_zoom_value = this.options.canvasZoom + buff;
-    const zoomBuff = this.showZoomCenter(userZoomCenter, buff);
-    this.options.canvasOffset.x += zoomBuff.buff_x;
-    this.options.canvasOffset.y += zoomBuff.buff_y;
-    this.options.canvasZoom = __new_zoom_value;
-    this._zoomEnd(oldZoom, __new_zoom_value);
-  }
-  protected _zoomEnd(oldZoomValue:number, newZoomValue: number) {
-    this.refreshNVAnalysisInfo();
-    if (oldZoomValue <= 40 && newZoomValue > 40) {
-      if (this.options.performanceMode) {
-        this.updateVisbleViewNodes(true);
-      }
-      this.options.showEasyView = false;
-      devLog('zoom:hide:showEasyView', oldZoomValue, newZoomValue);
-      this.updateElementLines();
-      // setTimeout(() => {
-      //   this.updateElementLines();
-      // }, 500);
-    }
-    if (oldZoomValue > 40 && newZoomValue <= 40) {
-      devLog('zoom:show:showEasyView', oldZoomValue, newZoomValue);
-      if (this.options.performanceMode) {
-        this.options.showEasyView = true;
-      }
-    }
-    // this.options.showEasyView = this.options.canvasZoom <= 40;
-    this.updateEditingControllerView();
-    this.emitEvent(RGEventNames.onZoomEnd, this.options.canvasZoom);
-    this._dataUpdated();
-  }
-  setZoom(finalZoom:number, userZoomCenter?:RGZoomCenter) {
-    const buff = Math.floor(finalZoom - this.options.canvasZoom);
-    this.zoom(buff, userZoomCenter);
-  }
-  zoomCenter_of_newSize = { x: 0, y: 0 };
 
-  /**
-   * Get the coordinates mapped on the viewport from the canvas coordinates
-   * @param clientCoordinate
-   */
-  getCanvasCoordinateByClientCoordinate(clientCoordinate:RGCoordinate) {
-    const _current_zoom = this.options.canvasZoom / 100;
-    const { NMCanvasStart, NMZoomCenter } = this.analysisByZoom(_current_zoom, clientCoordinate);
-    const zoomCenter = {
-      x: NMZoomCenter.x - NMCanvasStart.x,
-      y: NMZoomCenter.y - NMCanvasStart.y
-    };
-    return {
-      x: zoomCenter.x / _current_zoom,
-      y: zoomCenter.y / _current_zoom
-    };
-  }
-
-  /**
-   * Get the coordinates mapped on the canvas from the viewport coordinates
-   * @param canvasCoordinate
-   */
-  getClientCoordinateByCanvasCoordinate(canvasCoordinate:RGCoordinate) {
-    const _current_zoom = this.options.canvasZoom / 100;
-    const { NMCanvasStart } = this.analysisByZoom(_current_zoom);
-    const zoomCenter = {
-      x: canvasCoordinate.x * _current_zoom + NMCanvasStart.x,
-      y: canvasCoordinate.y * _current_zoom + NMCanvasStart.y
-    };
-    // const zoomCenter = {
-    //   x: canvasCoordinate.x * _current_zoom,
-    //   y: canvasCoordinate.y * _current_zoom
-    // };
-
-    return {
-      x: zoomCenter.x + this.options.canvasOffset.x,
-      y: zoomCenter.y + this.options.canvasOffset.y
-    };
-  }
-
-  /**
-   * Get the coordinates mapped on the canvas from the viewport coordinates
-   * @param canvasCoordinate
-   */
-  getViewPointByCanvasPoint(canvasCoordinate:RGCoordinate) {
-    const _current_zoom = this.options.canvasZoom / 100;
-    const { NMCanvasStart } = this.analysisByZoom(_current_zoom);
-    const zoomCenter = {
-      x: canvasCoordinate.x * _current_zoom + NMCanvasStart.x,
-      y: canvasCoordinate.y * _current_zoom + NMCanvasStart.y
-    };
-    // const zoomCenter = {
-    //   x: canvasCoordinate.x * _current_zoom,
-    //   y: canvasCoordinate.y * _current_zoom
-    // };
-    return {
-      x: zoomCenter.x,
-      y: zoomCenter.y
-    };
-  }
-
-  /**
-   * Get the coordinates mapped on the viewport from the canvas coordinates
-   * @param canvasCoordinate
-   */
-  getCanvasPointByViewPoint(canvasCoordinate:RGCoordinate) {
-    const _view_info = this.$dom.getBoundingClientRect();
-    return this.getCanvasCoordinateByClientCoordinate({
-      x: _view_info.left + canvasCoordinate.x,
-      y: _view_info.top + canvasCoordinate.y,
-    });
-  }
-  analysisByZoom(zoom:number, userZoomCenter?:RGZoomCenter) {
-    const result = {
-      NMViewPosition: { x: 0, y: 0 },
-      NMViewCenter: { x: 0, y: 0 },
-      NMCanvasCenter: { x: 0, y: 0 },
-      NMCanvasStart: { x: 0, y: 0 },
-      NMCanvasEnd: { x: 0, y: 0 },
-      NMZoomCenter: { x: 0, y: 0 },
-      NMViewBuff: { x: 0, y: 0 },
-      NMCanvasOffsetBuff: { x: 0, y: 0 },
-      NMCanvasSize: { width: 0, height: 0 }
-    };
-    // const windowWidth = getScreenWidth();
-    // const windowHeight = getScreenHeight();
-    const _view_info = this.$dom.getBoundingClientRect();
-    result.NMViewPosition.x = _view_info.left;
-    result.NMViewPosition.y = _view_info.top;
-    // if (_view_info.width + result.NMViewPosition.x > windowWidth) {
-    //   result.NMViewCenter.x = (windowWidth - _view_info.left) / 2;
-    // } else {
-    //   result.NMViewCenter.x = _view_info.width / 2;
-    // }
-    // if (_view_info.height + result.NMViewPosition.y > windowHeight) {
-    //   result.NMViewCenter.y = (windowHeight - _view_info.top) / 2;
-    // } else {
-    //   result.NMViewCenter.y = _view_info.height / 2;
-    // }
-    result.NMViewCenter.x = _view_info.width / 2;
-    result.NMViewCenter.y = _view_info.height / 2;
-    const _NM_canvas_width = this.options.canvasSize.width * zoom;
-    const _NM_canvas_height = this.options.canvasSize.height * zoom;
-    result.NMCanvasCenter.x = this.options.canvasOffset.x + (this.options.canvasSize.width / 2); // + (this.options.canvasOffset.zoom_buff_x * _NM_canvas_width)
-    result.NMCanvasCenter.y = this.options.canvasOffset.y + (this.options.canvasSize.height / 2); // + (this.options.canvasOffset.zoom_buff_y * _NM_canvas_height)
-    result.NMCanvasStart.x = result.NMCanvasCenter.x - _NM_canvas_width / 2;
-    result.NMCanvasStart.y = result.NMCanvasCenter.y - _NM_canvas_height / 2;
-    result.NMCanvasEnd.x = result.NMCanvasCenter.x + _NM_canvas_width / 2;
-    result.NMCanvasEnd.y = result.NMCanvasCenter.y + _NM_canvas_height / 2;
-    result.NMZoomCenter.x = result.NMViewCenter.x;
-    result.NMZoomCenter.y = result.NMViewCenter.y;
-    if (userZoomCenter) {
-      result.NMZoomCenter.x = userZoomCenter.x - result.NMViewPosition.x;
-      result.NMZoomCenter.y = userZoomCenter.y - result.NMViewPosition.y;
+    protected getClampedZoom(finalZoom: number) {
+        const options = this.getOptions();
+        return Math.max(options.minCanvasZoom, Math.min(options.maxCanvasZoom, finalZoom));
     }
-    let _NM_buff_x = result.NMViewCenter.x - result.NMCanvasCenter.x;
-    let _NM_buff_y = result.NMViewCenter.y - result.NMCanvasCenter.y;
-    if (userZoomCenter) {
-      _NM_buff_x = result.NMZoomCenter.x - result.NMCanvasCenter.x;
-      _NM_buff_y = result.NMZoomCenter.y - result.NMCanvasCenter.y;
+
+    protected applyZoom(newZoom: number, canvasOffset: RGCoordinate, e?: WheelEvent) {
+        if (this._rgAsConnectArea) {
+            return;
+        }
+        const options = this.getOptions();
+        const finalZoom = this.getClampedZoom(newZoom);
+        const zoomBuff = finalZoom - options.canvasZoom;
+        const offsetChanged = canvasOffset.x !== options.canvasOffset.x || canvasOffset.y !== options.canvasOffset.y;
+        if (zoomBuff === 0 && !offsetChanged) {
+            return;
+        }
+        try {
+            const abortZoom = this.emitEvent(RGEventNames.beforeZoomStart, options.canvasZoom, zoomBuff, e);
+            devLog('[zoom]', 'abortZoom:', abortZoom);
+            if (abortZoom === true) {
+                return;
+            }
+            const oldZoom = options.canvasZoom;
+            this._performanceModeLogicHook(oldZoom, finalZoom);
+            this.dataProvider.updateOptions({
+                canvasOffset: {
+                    x: canvasOffset.x,
+                    y: canvasOffset.y
+                },
+                canvasZoom: finalZoom
+            });
+            this.emitEvent(RGEventNames.onZoomEnd, finalZoom, oldZoom);
+        } finally {
+            this._updateEditingControllerView(); // Includes _dataUpdated call
+            this._dataUpdated();
+        }
     }
-    result.NMViewBuff.x = _NM_buff_x;
-    result.NMViewBuff.y = _NM_buff_y;
-    result.NMCanvasSize.width = _NM_canvas_width;
-    result.NMCanvasSize.height = _NM_canvas_height;
-    return result;
-  }
-  showZoomCenter(userZoomCenter:RGZoomCenter|undefined, zoomBuff:number):{buff_x:number, buff_y:number} {
-    if (!this.$dom) {
-      return { buff_x: 0, buff_y: 0 };
+
+    /**
+     * Zoom based on the current zoom level
+     * @param buff The additional zoom level to be added based on the current zoom level. A positive number indicates zooming in, and a negative number indicates zooming out, in percentage. For example: 10 means zoom in by 10%, -10 means zoom out by 10%
+     * @param userZoomCenter User zoom center point coordinates, default is the center point of the view
+     * @param e Mouse wheel event object, optional
+     *
+     */
+    zoom(buff: number, userZoomCenter?: RGClientXy, e?: WheelEvent) {
+        if (this._rgAsConnectArea) {
+            return;
+        }
+        const options = this.getOptions();
+        const viewRectBox = this.getViewBoundingClientRect();
+        const finalZoom = this.getClampedZoom(options.canvasZoom + buff);
+        if (!userZoomCenter) {
+            userZoomCenter = {
+                x: viewRectBox.x + viewRectBox.width / 2,
+                y: viewRectBox.y + viewRectBox.height / 2,
+            }
+        }
+        const mouseX = userZoomCenter.x - viewRectBox.left;
+        const mouseY = userZoomCenter.y - viewRectBox.top;
+        const oldScale = options.canvasZoom / 100;
+        const newScale = finalZoom / 100;
+        const newX = mouseX - (mouseX - options.canvasOffset.x) * (newScale / oldScale);
+        const newY = mouseY - (mouseY - options.canvasOffset.y) * (newScale / oldScale);
+        this.applyZoom(finalZoom, {
+            x: newX,
+            y: newY
+        }, e);
     }
-    const _current_zoom = this.options.canvasZoom / 100;
-    const currentZoomSet = this.analysisByZoom(_current_zoom, userZoomCenter);
-    const _new_zoom = (this.options.canvasZoom + zoomBuff) / 100;
-    const newZoomSet = this.analysisByZoom(_new_zoom, userZoomCenter);
-    // devLog('currentZoomSet:', currentZoomSet)
-    // devLog('currentZoomSet:', this.newZoomSet)
-    const a = _new_zoom / _current_zoom;
-    const b = 0;
-    const c = 0;
-    const d = _new_zoom / _current_zoom;
-    const e = 0;
-    const f = 0;
-    this.zoomCenter_of_newSize.x = a * currentZoomSet.NMViewBuff.x + c * currentZoomSet.NMViewBuff.y + e;
-    this.zoomCenter_of_newSize.y = b * currentZoomSet.NMViewBuff.x + d * currentZoomSet.NMViewBuff.y + f;
-    const buff_x = currentZoomSet.NMViewBuff.x - this.zoomCenter_of_newSize.x;
-    const buff_y = currentZoomSet.NMViewBuff.y - this.zoomCenter_of_newSize.y;
-    this.zoomCenter_of_newSize.x += currentZoomSet.NMCanvasCenter.x;
-    this.zoomCenter_of_newSize.y += currentZoomSet.NMCanvasCenter.y;
-    // e = currentZoomSet.NMViewBuff.x
-    // f = currentZoomSet.NMViewBuff.y
-    // new start
-    let old_x = currentZoomSet.NMCanvasStart.x - currentZoomSet.NMCanvasCenter.x;
-    let old_y = currentZoomSet.NMCanvasStart.y - currentZoomSet.NMCanvasCenter.y;
-    let new_x = a * old_x + c * old_y + e;
-    let new_y = b * old_x + d * old_y + f;
-    newZoomSet.NMCanvasStart.x = buff_x + currentZoomSet.NMCanvasCenter.x + new_x;
-    newZoomSet.NMCanvasStart.y = buff_x + currentZoomSet.NMCanvasCenter.y + new_y;
-    // new end
-    old_x = currentZoomSet.NMCanvasEnd.x - currentZoomSet.NMCanvasCenter.x;
-    old_y = currentZoomSet.NMCanvasEnd.y - currentZoomSet.NMCanvasCenter.y;
-    new_x = a * old_x + c * old_y + e;
-    new_y = b * old_x + d * old_y + f;
-    newZoomSet.NMCanvasEnd.x = buff_x + currentZoomSet.NMCanvasCenter.x + new_x;
-    newZoomSet.NMCanvasEnd.y = buff_x + currentZoomSet.NMCanvasCenter.y + new_y;
-    currentZoomSet.NMCanvasOffsetBuff.x = buff_x;
-    currentZoomSet.NMCanvasOffsetBuff.y = buff_y;
-    // this.isShowZoomCenter = true
-    return {
-      buff_x, buff_y
-    };
-  }
+
+    protected setZoomAndOffset(finalZoom: number, canvasOffset: RGCoordinate, e?: WheelEvent) {
+        this.applyZoom(finalZoom, canvasOffset, e);
+    }
+
+    /**
+     * @inner
+     * @protected
+     */
+    protected _performanceModeLogicHook(oldZoomValue: number, newZoomValue: number) {
+        const options = this.getOptions();
+        if (oldZoomValue <= 40) {
+            if (newZoomValue > 40) {
+                if (options.performanceMode) {
+                    this.updateShouldRenderGraphData(true);
+                }
+                this.dataProvider.updateOptions({
+                    showEasyView: false
+                });
+                devLog('zoom:hide:showEasyView', oldZoomValue, newZoomValue);
+                this.updateElementLines();
+            }
+        } else if (oldZoomValue > 40) {
+            if (newZoomValue <= 40) {
+                devLog('zoom:show:showEasyView', oldZoomValue, newZoomValue);
+                if (options.performanceMode) {
+                    this.dataProvider.updateOptions({
+                        showEasyView: true
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * Set the canvas zoom to the specified zoom level
+     * @param finalZoom Target zoom level, expressed as a percentage, for example: 100 means 100%
+     * @param userZoomCenter User zoom center point coordinates, default is the center point of the view
+     *
+     */
+    setZoom(finalZoom: number, userZoomCenter?: RGClientXy) {
+        const options = this.getOptions();
+        const buff = finalZoom - options.canvasZoom;
+        this.zoom(buff, userZoomCenter);
+    }
 }

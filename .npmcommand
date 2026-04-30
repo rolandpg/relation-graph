@@ -1,0 +1,12 @@
+
+https://npmmirror.com/package/relation-graph
+
+
+npm config set registry https://registry.npmjs.org/
+
+npm deprecate -f relation-graph@2.2.5 "please use relation-graph@2.2.6"
+npm deprecate -f relation-graph-react@2.2.5 "please use relation-graph-react@2.2.6"
+npm deprecate -f relation-graph-vue2@2.2.5 "please use relation-graph-vue2@2.2.6"
+npm deprecate -f relation-graph-vue3@2.2.5 "please use relation-graph-vue3@2.2.6"
+npm deprecate -f relation-graph-svelte@2.2.5 "please use relation-graph-svelte@2.2.6"
+npm deprecate -f relation-graph-webcomponents@2.2.5 "please use relation-graph-webcomponents@2.2.6"

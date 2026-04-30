@@ -1,20 +1,24 @@
-import React, {MutableRefObject, useContext, useEffect, useRef} from 'react';
-import {RelationGraphStoreContext} from './store/reducers/StockStore';
+import React, {MutableRefObject, useEffect, useRef} from 'react';
 import {RGCanvasProps} from './RGCanvas';
 import { devLog } from '../../../../../../relation-graph-models/utils/RGCommon';
+import {useGraphInstance} from "../hooks/useGraphInstance";
+import {useGraphStore} from "../hooks/useGraphStore";
 
 const RGCanvas: React.FC<RGCanvasProps> = (canvasProps) => {
-  const relationGraph = useContext(RelationGraphStoreContext);
-  const options = relationGraph.options;
+  const graphInstance = useGraphInstance();
+  const {options} = useGraphStore();
   const rgEasyCanvas$ = useRef() as MutableRefObject<HTMLCanvasElement>;
 
   useEffect(() => {
     devLog('[RGEasyView mounted]');
-    relationGraph.setEasyViewCanvas(rgEasyCanvas$.current!);
+    graphInstance.setEasyViewCanvas(rgEasyCanvas$.current!);
+    return () => {
+        devLog('[RGEasyView UnMounted]');
+    }
   }, []);
 
   return (
-    <div className={`rel-easy-view ${options.showEasyView ? 'rel-easy-view-active' : ''}`}>
+    <div className={`rg-easy-view ${options.showEasyView ? 'rg-easy-view-active' : ''}`}>
       <canvas ref={rgEasyCanvas$} />
     </div>
   );

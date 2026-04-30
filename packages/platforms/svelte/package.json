@@ -1,0 +1,76 @@
+{
+    "name": "relation-graph-svelte",
+    "version": "3.0.6",
+    "description": "A Component Library for Svelte",
+    "keywords": [
+        "relation-graph-svelte",
+        "component library",
+        "ui framework",
+        "ui",
+        "vue"
+    ],
+    "homepage": "https://relation-graph.com/",
+    "bugs": {
+        "url": "https://github.com/seeksdream/relation-graph-svelte/issues"
+    },
+    "license": "MIT",
+    "main": "dist/relation-graph.cjs",
+    "module": "dist/relation-graph.mjs",
+    "svelte": "dist/relation-graph.mjs",
+    "type": "module",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "dist/index.d.ts",
+            "import": "dist/relation-graph.mjs",
+            "require": "dist/relation-graph.cjs"
+        },
+        "./style.css": "dist/style.css"
+    },
+    "scripts": {
+        "svelte-build": "svelte-package",
+        "vite-tsc": "vue-tsc --declaration --emitDeclarationOnly --declarationDir ./types src/index.ts",
+        "check": "svelte-check --tsconfig ./tsconfig.json",
+        "build": "vite build --base=.",
+        "build-wc": "vite build --base=.",
+        "dev": "vite dev",
+        "preview": "vite preview"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/seeksdream/relation-graph-svelte.git"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "style": "dist/style.css",
+    "sideEffects": [
+        "dist/*.css"
+    ],
+    "peerDependencies": {
+        "svelte": "^4.0.0"
+    },
+    "devDependencies": {
+        "@sveltejs/adapter-auto": "^7.0.0",
+        "@sveltejs/kit": "^2.5.0",
+        "@sveltejs/package": "^2.3.2",
+        "@sveltejs/vite-plugin-svelte": "^3.1.2",
+        "sass-embedded": "^1.93.3",
+        "svelte": "^4.2.0",
+        "svelte-check": "^3.7.1",
+        "tslib": "^2.6.2",
+        "typescript": "^5.4.0",
+        "vite": "^5.2.0",
+        "vite-plugin-dts": "^4.5.4"
+    },
+    "vetur": {
+        "tags": "tags.json",
+        "attributes": "attributes.json"
+    },
+    "web-types": "web-types.json",
+    "browserslist": [
+        "> 1%",
+        "not ie 11",
+        "not op_mini all"
+    ]
+}

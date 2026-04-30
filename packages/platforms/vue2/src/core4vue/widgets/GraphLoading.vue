@@ -1,37 +1,38 @@
 <template>
-  <div
-      class="rel-graph-loading"
-      :class="{'rel-graph-loading-hide': !options.graphLoading}"
-      @click="clickGraphMask"
-  >
-    <div v-if="options.graphLoadingText" class="rel-graph-loading-message">
-      <svg class="c-graph-loading-icon" aria-hidden="true"><use xlink:href="#icon-lianjiezhong"></use></svg>
-      {{options.graphLoadingText || 'Loading...'}}
+    <div
+            class="rg-graph-loading"
+            :class="{'rg-graph-loading-hide': !options.graphLoading}"
+            @click="clickGraphMask"
+    >
+        <div v-if="options.graphLoadingText" class="rg-graph-loading-message">
+            <RGIcons icon-name="icon-lianjiezhong" class-name="rg-graph-loading-icon"/>
+            {{ options.graphLoadingText || 'Loading...' }}
+        </div>
     </div>
-  </div>
 </template>
 
 <script lang="ts">
+import RGIcons from "./RGIcons";
 
 export default {
-  name: 'GraphLoading',
-  data() {
-    return {
-    };
-  },
-  inject: ['graph', 'graphInstance'],
-  computed: {
-    relationGraph() {
-      return this.graphInstance();
+    name: 'GraphLoading',
+    components: {RGIcons},
+    data() {
+        return {};
     },
-    options() {
-      return this.graph.options;
+    inject: ['graphStore'],
+    computed: {
+        graphInstance() {
+            return this.graphStore.graphInstance;
+        },
+        options() {
+            return this.graphStore.options;
+        }
+    },
+    methods: {
+        clickGraphMask(e) {
+            this.graphInstance.clearLoading();
+        }
     }
-  },
-  methods: {
-    clickGraphMask(e) {
-      this.relationGraph.clickGraphMask(e);
-    }
-  }
 };
 </script>

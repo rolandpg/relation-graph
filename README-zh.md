@@ -1,166 +1,302 @@
-
-
-<img src="doc/relation-graph-yellow-small.png" width="60" />
+<img src="https://www.relation-graph.com/github-doc-images/relation-graph-yellow-small.png" width="60" />
 
 # relation-graph
 
-
 [English ](README.md) | [简体中文](README-zh.md)
 
-- **relation-graph** 是支持Vue2、Vue3、React的关系数据展示组件，支持通过【插槽】让使用者使用"普通HTML元素、Vue组件、React组件"来完全自定义图形元素，并提供实用的API接口让使用者轻松构建可交互的图形应用。<br />
--  除了典型的关系数据展示功能，relation-graph还支持作为一个画板来使用，你可以在画板上放置任何内容，只需要为想要连接的元素设置id，同时定义"元素连线（Element Lines）"即可。轻松实现一个可任意创建连线、可缩放与拖动、支持通过API轻松实现动态交互的画板。
-### Docs & Examples  文档 & 示例：
+- **relation-graph** 是一个关系数据展示组件，支持 React、Vue 2、Vue 3、Svelte 和 WebComponent。它允许用户通过插槽，使用“通用 HTML 元素、Vue 组件、React 组件”等方式对图形元素进行完全自定义，并提供实用的 API 接口，方便开发交互式图形应用。<br />
+- 除了典型的关系数据展示能力之外，relation-graph 还支持作为绘图板使用。你可以在绘图板上放置任意内容，只需给想要连接的元素设置 id，并定义“element lines（元素连线）”。这样就可以轻松构建支持任意连接、缩放、拖拽，以及通过 API 进行动态交互的绘图板。
 
-- [https://relation-graph.com](https://relation-graph.com)  （国内用户，无需科学上网）
+### 文档与示例
 
-上面的网站中包含使用文档、在线示例，以及可视化的配置工具。<br>
+- [https://relation-graph.com](https://relation-graph.com)
 
-### Getting Started  快速使用：
+上述网站包含文档、在线演示以及面向软件开发者的可视化配置工具。
+
+### 快速开始
 
 ```shell script
-npm install --save relation-graph
+# React
+npm install --save @relation-graph/react
+# Vue3
+npm install --save @relation-graph/vue
+# Vue2
+npm install --save @relation-graph/vue2
+# Svelte
+npm install --save @relation-graph/svelte
+# Web Components
+import { ... } from "https://esm.sh/@relation-graph/web-components";
 ```
-```shell script
-# 注意：relation-graph支持Vue2、Vue3、React, 引入的包名称都是"relation-graph" 但在使用时，根据你的环境，需要引入不同的名称
-# Note: relation-graph supports Vue2, Vue3, React, but the package name for import is always "relation-graph".
-# 
-# Vue2： import RelationGraph from 'relation-graph'
-# Vue3： import RelationGraph from 'relation-graph/vue3'
-# React： import RelationGraph from 'relation-graph/react'
+```typescript
+// React:
+import RelationGraph from '@relation-graph/react'
+// Vue3:
+import RelationGraph from '@relation-graph/vue'
+// Vue2:
+import RelationGraph from '@relation-graph/vue2'
+// Svelte:
+import RelationGraph from '@relation-graph/svelte'
+// Web Components:
+// 使用自定义元素 <relation-graph></relation-graph>;
+```
+<details>
+  <summary>在 react 中使用 <strong>relation-graph</strong></summary>
+#### `index.tsx`
+```typescript jsx
+import { RGProvider } from '@relation-graph/react';
+import React from 'react';
+import MyGraph from "./MyGraph";
+const MyExample: React.FC = () => {
+    return (
+        <RGProvider>
+            <MyGraph />
+        </RGProvider>
+    );
+};
+export default MyExample;
 ```
 
-```vue
-<template>
-  <div>
-    <div style="height:calc(100vh - 60px);"><!-- The size of the parent element determines the size of the graph. -->
-      <RelationGraph
-              ref="graphRef"
-              :options="graphOptions"
-              :on-node-click="onNodeClick"
-              :on-line-click="onLineClick"
-      />
-    </div>
-  </div>
-</template>
+#### `MyGraph.tsx`
+```typescript jsx
+import React, { useEffect } from 'react';
+import {RelationGraph, RGHooks, RGMiniView, RGSlotOnNode, RGNodeShape, RGSlotOnView} from '@relation-graph/react';
+import type {
+    RGLine,
+    RGLink,
+    RGNode,
+    RGNodeSlotProps,
+    RGOptions,
+    RGUserEvent,
+    JsonNode,
+    JsonLine,
+    RGJsonData
+} from '@relation-graph/react';
+import CustomNode from "./CustomNode";
 
-<script>
-// relation-graph also supports usage in the main.js file with Vue.use(RelationGraph); this way, you don't need the following line of code for import.
-import RelationGraph from 'relation-graph'
-export default {
-  name: 'Demo',
-  components: { RelationGraph },
-  data() {
-    return {
-      graphOptions: {
-        defaultJunctionPoint: 'border'
-        // Here you can refer to the options in "Graph" for setting: 
-        // https://www.relation-graph.com/#/docs/graph
-        // You can also use this GUI tool to generate configuration content.
-        // https://www.relation-graph.com/#/options-tools
-      }
+const staticJsonData: RGJsonData = {
+    rootId: '2',
+    nodes: [
+        { id: '2', text: 'Initrode', width: 100, height: 100, data: { myicon: 'delivery_truck' } },
+        { id: '1', text: 'Paper Street Soap Co.', data: { myicon: 'fries' } },
+        { id: '3', text: 'Cyberdyne Systems', data: { myicon: 'football' } },
+        { id: '4', text: 'Tyrell Corporation', data: { myicon: 'desktop' } },
+        { id: '6', text: 'Weyland-Yutani', data: { myicon: 'fries' } },
+        { id: '7', text: 'Hooli', data: { myicon: 'desktop' } },
+        { id: '8', text: 'Vehement Capital', data: { myicon: 'football' } },
+        { id: '9', text: 'Omni Consumer Products', data: { myicon: 'football' } },
+        { id: '71', text: 'Stark Industries', data: { myicon: 'delivery_truck' } },
+        { id: '72', text: 'Buy n Large', data: { myicon: 'fries' } },
+        { id: '73', text: 'Binford Tools', data: { myicon: 'delivery_truck' } },
+        { id: '81', text: 'Initech', data: { myicon: 'fries' } },
+        { id: '82', text: 'Aperture Science', data: { myicon: 'desktop' } },
+        { id: '83', text: 'Prestige Worldwide', data: { myicon: 'delivery_truck' } },
+        { id: '84', text: 'Massive Dynamic', data: { myicon: 'football' } },
+        { id: '85', text: 'Virtucon', data: { myicon: 'delivery_truck' } },
+        { id: '91', text: 'Acme Corp', data: { myicon: 'football' } },
+        { id: '92', text: 'Nakatomi Trading', data: { myicon: 'football' } },
+        { id: '5', text: 'Los Pollos Hermanos', data: { myicon: 'burger' } }
+    ] as JsonNode[],
+    lines: [
+        { from: '7', to: '71', text: 'Invest' },
+        { from: '7', to: '72', text: 'Invest' },
+        { from: '7', to: '73', text: 'Invest' },
+        { from: '8', to: '81', text: 'Invest' },
+        { from: '8', to: '82', text: 'Invest' },
+        { from: '8', to: '83', text: 'Invest' },
+        { from: '8', to: '84', text: 'Invest' },
+        { from: '8', to: '85', text: 'Invest' },
+        { from: '9', to: '91', text: 'Invest' },
+        { from: '9', to: '92', text: 'Invest' },
+        { from: '1', to: '2', text: 'Invest' },
+        { from: '3', to: '1', text: 'Executive' },
+        { from: '4', to: '2', text: 'Executive' },
+        { from: '6', to: '2', text: 'Executive' },
+        { from: '7', to: '2', text: 'Executive' },
+        { from: '8', to: '2', text: 'Executive' },
+        { from: '9', to: '2', text: 'Executive' },
+        { from: '1', to: '5', text: 'Invest' }
+    ] as JsonLine[]
+};
+
+const MyGraph: React.FC = () => {
+    const graphInstance = RGHooks.useGraphInstance();
+
+    const graphOptions: RGOptions = {
+        debug: true,
+        defaultLineShape: RGLineShape.StandardStraight,
+        defaultNodeShape: RGNodeShape.circle,
+        defaultNodeWidth: 60,
+        defaultNodeHeight: 60,
+        defaultLineTextOnPath: true,
+        layout: {
+            layoutName: 'center'
+        },
+        defaultExpandHolderPosition: 'right',
+        reLayoutWhenExpandedOrCollapsed: true
+    };
+
+    const initializeGraph = async () => {
+        await graphInstance.setJsonData(staticJsonData);
+        graphInstance.moveToCenter();
+        graphInstance.zoomToFit();
+    };
+
+    useEffect(() => {
+        initializeGraph();
+    }, []);
+
+    const onNodeClick = (node: RGNode, e: RGUserEvent) => {
+        console.log('onNodeClick:', node.text);
+        return true;
+    };
+
+    const onLineClick = (line: RGLine, link: RGLink, e: RGUserEvent) => {
+        console.log('onLineClick:', line.text, line.from, line.to);
+        return true;
+    };
+
+    return (
+        <div className="my-graph" style={{ height: 'calc(100vh - 0px)' }}>
+            <RelationGraph
+                options={graphOptions}
+                onNodeClick={onNodeClick}
+                onLineClick={onLineClick}
+            >
+                {/* 5. 节点内容插槽 */}
+                <RGSlotOnNode>
+                    {({ node, checked, dragging }: RGNodeSlotProps) => (
+                        <CustomNode node={node} checked={checked} dragging={dragging} />
+                    )}
+                </RGSlotOnNode>
+                <RGSlotOnView>
+                    <RGMiniView />
+                </RGSlotOnView>
+            </RelationGraph>
+        </div>
+    );
+};
+export default MyGraph;
+
+```
+
+#### `CustomNode.tsx`
+```typescript jsx
+import React from 'react';
+import type { RGNodeSlotProps } from '@relation-graph/react';
+import {HelpCircle, Monitor, Sandwich, Trophy, Truck, Utensils} from "lucide-react";
+
+const IconSwitcher = ({ iconName, size = 24, color = 'currentColor' }) => {
+    const props = { size, color };
+    switch (iconName) {
+        case 'desktop':
+            return <Monitor {...props} />;
+        case 'burger':
+            return <Sandwich {...props} />;
+        case 'delivery_truck':
+            return <Truck {...props} />;
+        case 'fries':
+            return <Utensils {...props} />;
+        case 'football':
+            return <Trophy {...props} />;
+        default:
+            return <HelpCircle {...props} />;
     }
-  },
-  mounted() {
-    this.showGraph()
-  },
-  methods: {
-    showGraph() {
-      const jsonData = {
-        rootId: 'a',
-        nodes: [
-          // You can also use slots directly without defining these cumbersome attributes and use CSS styles to define the appearance of your nodes.
-          // Example of using slots: https://www.relation-graph.com/#/demo/node-style
-          { id: 'a', text: 'A', borderColor: 'yellow' },
-          { id: 'b', text: 'B', color: '#43a2f1', fontColor: 'yellow' },
-          { id: 'c', text: 'C', nodeShape: 1, width: 80, height: 60 },
-          { id: 'e', text: 'E', nodeShape: 0, width: 150, height: 150 }
-        ],
-        lines: [
-          { from: 'a', to: 'b', text: 'line1', color: '#43a2f1' },
-          { from: 'a', to: 'c', text: 'line2' },
-          { from: 'a', to: 'e', text: 'line3' },
-          { from: 'b', to: 'e', color: '#67C23A' }
-        ]
-      }
-      // The node and line in the above data can refer to the options in "Node" and "Link & Line" for configuration.
-      // Node: https://www.relation-graph.com/#/docs/node
-      // Link & Line: https://www.relation-graph.com/#/docs/link
-
-      this.$refs.graphRef.setJsonData(jsonData, (graphInstance) => {
-        // Called when the relation-graph is completed
-      });
-      // The this.refs.graphRef.setJsonData(jsonData, callback) method is a convenient method that is equivalent to the following code:
-      //  const graphInstance = this.refs.graphRef.getInstance();
-      //  graphInstance.addNodes(jsonData.nodes);
-      //  graphInstance.addLines(jsonData.lines);
-      //  graphInstance.rootNode = graphInstance.getNodeById(jsonData.rootId);
-      //  await graphInstance.doLayout(); // Layout using the layouter set in graphOptions
-      //  await graphInstance.moveToCenter(); // Find the center based on node distribution and center the view
-      //  await graphInstance.zoomToFit(); // Zoom to fit, so that all nodes can be displayed in the visible area
-    },
-    onNodeClick(nodeObject, $event) {
-      console.log('onNodeClick:', nodeObject)
-    },
-    onLineClick(lineObject, $event) {
-      console.log('onLineClick:', lineObject)
+};
+const CustomNode: React.FC<RGNodeSlotProps> = ({ node }) => {
+    if (node.id === '2') { // 根节点
+        return (
+            // 这里的 `h-full` 和 `w-full` 生效的前提是：节点数据中已设置 `width` 和 `height` 属性，或者全局已配置 `defaultNodeWidth` 和 `defaultNodeHeight`。
+            <div className="my-root z-[555] h-full w-full rounded-full relative text-lg flex place-items-center justify-center overflow-hidden">
+                <div className="py-2 w-full text-center text-white bg-gray-100 bg-opacity-40 border-t border-b border-gray-500">
+                    {node.text}
+                </div>
+            </div>
+        );
     }
-  }
-}
-</script>
+    return ( // 普通节点
+        // 这里的 `h-full` 和 `w-full` 生效的前提是：节点数据中已设置 `width` 和 `height` 属性，或者全局已配置 `defaultNodeWidth` 和 `defaultNodeHeight`。
+        <div className="h-full w-full rounded-full flex place-items-center justify-center shadow-md">
+            <IconSwitcher iconName={node.data?.myicon} size={30} />
+            <div
+                className="bg-gray-200 text-black px-2 rounded-lg absolute my-node-text"
+                style={{
+                    marginTop: '100%',
+                    transform: 'translateY(15px)'
+                }}
+            >
+                {node.text}
+            </div>
+        </div>
+    );
+};
+export default CustomNode;
+
 ```
 
+#### 示例代码效果
+![简单示例效果图](https://www.relation-graph.com/github-doc-images/relation-graph-simple.png)
+</details>
 
-### Sample code effects  上面代码的效果：
-![简单示例效果图](doc/images/relation-graph-simple.png)
-
-### Example Projects  完整的示例代码：
-
-- Vue3完整小示例:
-- https://github.com/seeksdream/relation-graph-vue3-demo
-
-- React完整小示例:
-- https://github.com/seeksdream/relation-graph-react-demo
-
-- vue2完整小示例:
-- https://github.com/seeksdream/relation-graph-vue2-demo
+---
 
 
-### More Examples   更多示例：
-- [https://relation-graph.com/#/demo](https://relation-graph.com/#/demo)  （国内用户，无需科学上网）
+### 示例项目
 
 
-![relation-graph](doc/relation-graph-images-m.png)
+- 完整的 React 示例项目：
+- https://github.com/relation-graph/relation-graph-vue2-project-example
+-
+- 完整的 Vue3 示例项目：
+- https://github.com/relation-graph/relation-graph-react-project-example
 
-![center-层级距离设置](doc/demo-images/distance_coefficient.gif)
-![力学布局(force)](doc/demo-images/layout-force.gif)
-![节点展开/收缩的用法](doc/demo-images/adv-expand.gif)
-![节点筛选 & 关系筛选](doc/demo-images/adv-data-filter.gif)
-![节点/连线点击效果2](doc/demo-images/adv-effect2.gif)
-![展开/收缩 时动画效果](doc/demo-images/expand-animation.gif)
-![展开/关闭所有](doc/demo-images/open-all-close-all.gif)
-![布局切换事件](doc/demo-images/before-change-layout.gif)
+- 完整的 Vue2 示例项目：
+- https://github.com/relation-graph/relation-graph-vue3-project-example
 
-### 完整的、可运行的示例项目：
+- 完整的 Svelte 示例项目：
+- https://github.com/relation-graph/relation-graph-svelte-project-example
 
-- Vue2完整小示例：
-- [https://github.com/seeksdream/relation-graph-vue2-demo(Vite)](https://github.com/seeksdream/relation-graph-vue2-demo)
-- [https://github.com/seeksdream/relation-graph-vue2-demo(Webpack)](https://github.com/seeksdream/relation-graph-webpack)
-
-- Vue3完整小示例：
-- https://github.com/seeksdream/relation-graph-vue3-demo
-
-- React完整小示例：
-- https://github.com/seeksdream/relation-graph-react-demo
+- 完整的 Web Components 示例项目：
+- https://github.com/relation-graph/relation-graph-webcomponents-project-example
 
 
-### More info  更多效果及使用方法：
+### 更多示例
+- [https://relation-graph.com/examples](https://relation-graph.com/examples)
 
-- [https://relation-graph.com](https://relation-graph.com)  （国内用户，无需科学上网）
 
-### Contact me  与我联系：
 
-- 我的QQ：3235808353
-- My WhatsApp:
+![relation-graph](https://www.relation-graph.com/github-doc-images/relation-graph-images-m.png)
 
-  <img src="doc/images/Whatsapp.png" width="200" />
+![center-层级距离设置](https://www.relation-graph.com/demo-images/distance_coefficient.gif)
+![力学布局(force)](https://www.relation-graph.com/demo-images/layout-force.gif)
+![节点展开/收缩的用法](https://www.relation-graph.com/demo-images/adv-expand.gif)
+![节点筛选 & 关系筛选](https://www.relation-graph.com/demo-images/adv-data-filter.gif)
+![节点/连线点击效果2](https://www.relation-graph.com/demo-images/adv-effect2.gif)
+![展开/收缩 时动画效果](https://www.relation-graph.com/demo-images/expand-animation.gif)
+![展开/关闭所有](https://www.relation-graph.com/demo-images/open-all-close-all.gif)
+![布局切换事件](https://www.relation-graph.com/demo-images/before-change-layout.gif)
 
+### 完整示例项目
+
+- 完整 Vue2 示例项目：
+- [https://github.com/relation-graph/relation-graph-vue2-project-example(Vite)](https://github.com/seeksdream/relation-graph-vue2-demo)
+- [https://github.com/relation-graph/relation-graph-vue2-project-example(Webpack)](https://github.com/seeksdream/relation-graph-webpack)
+
+- 完整 Vue3 示例项目：
+- https://github.com/relation-graph/relation-graph-vue3-project-example
+
+- 完整 React 示例项目：
+- https://github.com/relation-graph/relation-graph-react-project-example
+
+
+### 更多信息
+
+- [https://relation-graph.com](https://relation-graph.com)
+
+
+### 联系我
+
+- 我的 WhatsApp：
+
+  <img src="https://www.relation-graph.com/github-doc-images/Whatsapp.png" width="200" />
+
+- QQ：3235808353

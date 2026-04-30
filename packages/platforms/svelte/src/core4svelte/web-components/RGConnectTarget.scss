@@ -1,0 +1,19 @@
+.rg-connect-target-wrapper {
+    width: fit-content;
+    height: fit-content;
+    pointer-events: all;
+    display: flex;
+    place-items: center;
+    justify-content: center;
+}
+
+.rg-connect-ctl-handler {
+    pointer-events: all;
+    user-select: none;
+    z-index: 20;
+    cursor: crosshair;
+}
+
+.rg-connect-target {
+    pointer-events: all;
+}

@@ -1,25 +1,39 @@
-import {RelationGraphProps} from "../types";
+import {RelationGraphProps} from "../../types";
 
 export const getEventListeners = (props: RelationGraphProps) => {
   const listeners = {
+    onReady: props.onReady,
     onNodeClick: props.onNodeClick,
     onNodeExpand: props.onNodeExpand,
-    onNodeDragging: props.onNodeDragging,
-    onNodeDragStart: props.onNodeDragStart,
-    onNodeDragEnd: props.onNodeDragEnd,
     onNodeCollapse: props.onNodeCollapse,
     onLineClick: props.onLineClick,
-    onImageDownload: props.onImageDownload,
+    onNodeDragStart: props.onNodeDragStart,
+    onNodeDragEnd: props.onNodeDragEnd,
+    onNodeDragging: props.onNodeDragging,
     onCanvasDragEnd: props.onCanvasDragEnd,
-    beforeChangeLayout: props.beforeChangeLayout,
+    onCanvasDragging: props.onCanvasDragging,
     onContextmenu: props.onContextmenu,
     onFullscreen: props.onFullscreen,
     onCanvasClick: props.onCanvasClick,
-    onCanvasDragging: props.onCanvasDragging,
     onCanvasSelectionEnd: props.onCanvasSelectionEnd,
-    onImageSaveAsFile: props.onImageSaveAsFile,
+    beforeZoomStart: props.beforeZoomStart,
+    onZoomEnd: props.onZoomEnd,
+    onViewResize: props.onViewResize,
+    onResizeStart: props.onResizeStart,
     beforeNodeResize: props.beforeNodeResize,
-    onZoomEnd: props.onZoomEnd
+    onResizeEnd: props.onResizeEnd,
+    onLineVertexDropped: props.onLineVertexDropped,
+    beforeCreateLine: props.beforeCreateLine,
+    onLineBeCreated: props.onLineBeCreated,
+    beforeAddNodes: props.beforeAddNodes,
+    beforeAddLines: props.beforeAddLines,
+    onKeyboardDown: props.onKeyboardDown,
+    onKeyboardUp: props.onKeyboardUp,
+    onCanvasDragStart: props.onCanvasDragStart,
+    onForceLayoutFinish: props.onForceLayoutFinish,
+    beforeScrollStart: props.beforeScrollStart,
+    // onLineTextDragEnd: props.onLineTextDragEnd
   };
   return listeners;
 };
+

@@ -1,171 +1,292 @@
 
 
-<img src="doc/relation-graph-yellow-small.png" width="60" />
+<img src="https://www.relation-graph.com/github-doc-images/relation-graph-yellow-small.png" width="60" />
 
 # relation-graph
 
 [English ](README.md) | [简体中文](README-zh.md)
 
-- **relation-graph** is a relationship data display component that supports Vue 2, Vue 3, and React. It enables users to fully customize graphical elements using "common HTML elements, Vue components, React components" through slots, and provides practical API interfaces to facilitate the development of interactive graphical applications."<br />
+- **relation-graph** is a relationship data display component that supports React, Vue 2, Vue 3, Svelte and WebComponent. It enables users to fully customize graphical elements using "common HTML elements, Vue components, React components" through slots, and provides practical API interfaces to facilitate the development of interactive graphical applications."<br />
 -  In addition to the typical relationship data display functionality, the relation-graph also supports being used as a drawing board. You can place any content on the drawing board, simply by setting an id for the elements you want to connect, and defining "element lines." This allows for the easy creation of a drawing board that supports the creation of arbitrary connections, zooming and dragging, and dynamic interactions through the API.
-### Docs & Examples 
+### Docs & Examples
 
-- [https://relation-graph.com](https://relation-graph.com) 
+- [https://relation-graph.com](https://relation-graph.com)
 
 The website above includes documentation, online demos, and a visual configuration tool for software developers.
 
 ### Getting Started
 
 ```shell script
-# Vue2
-npm install --save relation-graph
-# Vue3
-npm install --save relation-graph-vue3
 # React
-npm install --save relation-graph-react
+npm install --save @relation-graph/react
+# Vue3
+npm install --save @relation-graph/vue
+# Vue2
+npm install --save @relation-graph/vue2
+# Svelte
+npm install --save @relation-graph/svelte
+# Web Components
+import { ... } from "https://esm.sh/@relation-graph/web-components";
 ```
-```shell script
-# Vue2： import RelationGraph from 'relation-graph'
-# Vue3： import RelationGraph from 'relation-graph-vue3'
-# React： import RelationGraph from 'relation-graph-react'
+```typescript
+// React:
+import RelationGraph from '@relation-graph/react'
+// Vue3:
+import RelationGraph from '@relation-graph/vue'
+// Vue2:
+import RelationGraph from '@relation-graph/vue2'
+// Svelte:
+import RelationGraph from '@relation-graph/svelte'
+// Web Components:
+// Use the custom element <relation-graph></relation-graph>;
+```
+<details>
+  <summary>Use <strong>relation-graph</strong> in react</summary>
+#### `index.tsx`
+```typescript jsx
+import { RGProvider } from '@relation-graph/react';
+import React from 'react';
+import MyGraph from "./MyGraph";
+const MyExample: React.FC = () => {
+    return (
+        <RGProvider>
+            <MyGraph />
+        </RGProvider>
+    );
+};
+export default MyExample;
 ```
 
-```vue
-<template>
-  <div>
-    <div style="height:calc(100vh - 60px);"><!-- The size of the parent element determines the size of the graph. -->
-      <RelationGraph
-              ref="graphRef"
-              :options="graphOptions"
-              :on-node-click="onNodeClick"
-              :on-line-click="onLineClick"
-      />
-    </div>
-  </div>
-</template>
+#### `MyGraph.tsx`
+```typescript jsx
+import React, { useEffect } from 'react';
+import {RelationGraph, RGHooks, RGMiniView, RGSlotOnNode, RGNodeShape, RGSlotOnView} from '@relation-graph/react';
+import type {
+    RGLine,
+    RGLink,
+    RGNode,
+    RGNodeSlotProps,
+    RGOptions,
+    RGUserEvent,
+    JsonNode,
+    JsonLine,
+    RGJsonData
+} from '@relation-graph/react';
+import CustomNode from "./CustomNode";
 
-<script>
-// relation-graph also supports usage in the main.js file with Vue.use(RelationGraph); this way, you don't need the following line of code for import.
-import RelationGraph from 'relation-graph'
-export default {
-  name: 'Demo',
-  components: { RelationGraph },
-  data() {
-    return {
-      graphOptions: {
-        defaultJunctionPoint: 'border'
-        // Here you can refer to the options in "Graph" for setting: 
-        // https://www.relation-graph.com/#/docs/graph
-        // You can also use this GUI tool to generate configuration content.
-        // https://www.relation-graph.com/#/options-tools
-      }
+const staticJsonData: RGJsonData = {
+    rootId: '2',
+    nodes: [
+        { id: '2', text: 'Initrode', width: 100, height: 100, data: { myicon: 'delivery_truck' } },
+        { id: '1', text: 'Paper Street Soap Co.', data: { myicon: 'fries' } },
+        { id: '3', text: 'Cyberdyne Systems', data: { myicon: 'football' } },
+        { id: '4', text: 'Tyrell Corporation', data: { myicon: 'desktop' } },
+        { id: '6', text: 'Weyland-Yutani', data: { myicon: 'fries' } },
+        { id: '7', text: 'Hooli', data: { myicon: 'desktop' } },
+        { id: '8', text: 'Vehement Capital', data: { myicon: 'football' } },
+        { id: '9', text: 'Omni Consumer Products', data: { myicon: 'football' } },
+        { id: '71', text: 'Stark Industries', data: { myicon: 'delivery_truck' } },
+        { id: '72', text: 'Buy n Large', data: { myicon: 'fries' } },
+        { id: '73', text: 'Binford Tools', data: { myicon: 'delivery_truck' } },
+        { id: '81', text: 'Initech', data: { myicon: 'fries' } },
+        { id: '82', text: 'Aperture Science', data: { myicon: 'desktop' } },
+        { id: '83', text: 'Prestige Worldwide', data: { myicon: 'delivery_truck' } },
+        { id: '84', text: 'Massive Dynamic', data: { myicon: 'football' } },
+        { id: '85', text: 'Virtucon', data: { myicon: 'delivery_truck' } },
+        { id: '91', text: 'Acme Corp', data: { myicon: 'football' } },
+        { id: '92', text: 'Nakatomi Trading', data: { myicon: 'football' } },
+        { id: '5', text: 'Los Pollos Hermanos', data: { myicon: 'burger' } }
+    ] as JsonNode[],
+    lines: [
+        { from: '7', to: '71', text: 'Invest' },
+        { from: '7', to: '72', text: 'Invest' },
+        { from: '7', to: '73', text: 'Invest' },
+        { from: '8', to: '81', text: 'Invest' },
+        { from: '8', to: '82', text: 'Invest' },
+        { from: '8', to: '83', text: 'Invest' },
+        { from: '8', to: '84', text: 'Invest' },
+        { from: '8', to: '85', text: 'Invest' },
+        { from: '9', to: '91', text: 'Invest' },
+        { from: '9', to: '92', text: 'Invest' },
+        { from: '1', to: '2', text: 'Invest' },
+        { from: '3', to: '1', text: 'Executive' },
+        { from: '4', to: '2', text: 'Executive' },
+        { from: '6', to: '2', text: 'Executive' },
+        { from: '7', to: '2', text: 'Executive' },
+        { from: '8', to: '2', text: 'Executive' },
+        { from: '9', to: '2', text: 'Executive' },
+        { from: '1', to: '5', text: 'Invest' }
+    ] as JsonLine[]
+};
+
+const MyGraph: React.FC = () => {
+    const graphInstance = RGHooks.useGraphInstance();
+
+    const graphOptions: RGOptions = {
+        debug: true,
+        defaultLineShape: RGLineShape.StandardStraight,
+        defaultNodeShape: RGNodeShape.circle,
+        defaultNodeWidth: 60,
+        defaultNodeHeight: 60,
+        defaultLineTextOnPath: true,
+        layout: {
+            layoutName: 'center'
+        },
+        defaultExpandHolderPosition: 'right',
+        reLayoutWhenExpandedOrCollapsed: true
+    };
+
+    const initializeGraph = async () => {
+        await graphInstance.setJsonData(staticJsonData);
+        graphInstance.moveToCenter();
+        graphInstance.zoomToFit();
+    };
+
+    useEffect(() => {
+        initializeGraph();
+    }, []);
+
+    const onNodeClick = (node: RGNode, e: RGUserEvent) => {
+        console.log('onNodeClick:', node.text);
+        return true;
+    };
+
+    const onLineClick = (line: RGLine, link: RGLink, e: RGUserEvent) => {
+        console.log('onLineClick:', line.text, line.from, line.to);
+        return true;
+    };
+
+    return (
+        <div className="my-graph" style={{ height: 'calc(100vh - 0px)' }}>
+            <RelationGraph
+                options={graphOptions}
+                onNodeClick={onNodeClick}
+                onLineClick={onLineClick}
+            >
+                {/* 5. Node content slot */}
+                <RGSlotOnNode>
+                    {({ node, checked, dragging }: RGNodeSlotProps) => (
+                        <CustomNode node={node} checked={checked} dragging={dragging} />
+                    )}
+                </RGSlotOnNode>
+                <RGSlotOnView>
+                    <RGMiniView />
+                </RGSlotOnView>
+            </RelationGraph>
+        </div>
+    );
+};
+export default MyGraph;
+
+```
+
+#### `CustomNode.tsx`
+```typescript jsx
+import React from 'react';
+import type { RGNodeSlotProps } from '@relation-graph/react';
+import {HelpCircle, Monitor, Sandwich, Trophy, Truck, Utensils} from "lucide-react";
+
+const IconSwitcher = ({ iconName, size = 24, color = 'currentColor' }) => {
+    const props = { size, color };
+    switch (iconName) {
+        case 'desktop':
+            return <Monitor {...props} />;
+        case 'burger':
+            return <Sandwich {...props} />;
+        case 'delivery_truck':
+            return <Truck {...props} />;
+        case 'fries':
+            return <Utensils {...props} />;
+        case 'football':
+            return <Trophy {...props} />;
+        default:
+            return <HelpCircle {...props} />;
     }
-  },
-  mounted() {
-    this.showGraph()
-  },
-  methods: {
-    showGraph() {
-      const jsonData = {
-        rootId: 'a',
-        nodes: [
-          // You can also use slots directly without defining these cumbersome attributes and use CSS styles to define the appearance of your nodes.
-          // Example of using slots: https://www.relation-graph.com/#/demo/node-style
-          { id: 'a', text: 'A', borderColor: 'yellow' },
-          { id: 'b', text: 'B', color: '#43a2f1', fontColor: 'yellow' },
-          { id: 'c', text: 'C', nodeShape: 1, width: 80, height: 60 },
-          { id: 'e', text: 'E', nodeShape: 0, width: 150, height: 150 }
-        ],
-        lines: [
-          { from: 'a', to: 'b', text: 'line1', color: '#43a2f1' },
-          { from: 'a', to: 'c', text: 'line2' },
-          { from: 'a', to: 'e', text: 'line3' },
-          { from: 'b', to: 'e', color: '#67C23A' }
-        ]
-      }
-      // The node and line in the above data can refer to the options in "Node" and "Link & Line" for configuration.
-      // Node: https://www.relation-graph.com/#/docs/node
-      // Link & Line: https://www.relation-graph.com/#/docs/link
-
-      this.$refs.graphRef.setJsonData(jsonData, (graphInstance) => {
-        // Called when the relation-graph is completed
-      });
-      // The this.refs.graphRef.setJsonData(jsonData, callback) method is a convenient method that is equivalent to the following code:
-      //  const graphInstance = this.refs.graphRef.getInstance();
-      //  graphInstance.addNodes(jsonData.nodes);
-      //  graphInstance.addLines(jsonData.lines);
-      //  graphInstance.rootNode = graphInstance.getNodeById(jsonData.rootId);
-      //  await graphInstance.doLayout(); // Layout using the layouter set in graphOptions
-      //  await graphInstance.moveToCenter(); // Find the center based on node distribution and center the view
-      //  await graphInstance.zoomToFit(); // Zoom to fit, so that all nodes can be displayed in the visible area
-    },
-    onNodeClick(nodeObject, $event) {
-      console.log('onNodeClick:', nodeObject)
-    },
-    onLineClick(lineObject, $event) {
-      console.log('onLineClick:', lineObject)
+};
+const CustomNode: React.FC<RGNodeSlotProps> = ({ node }) => {
+    if (node.id === '2') { // rootNode
+        return (
+            // Here, `h-full` and `w-full` apply on the premise that `width` and `height` attributes have been set for the node data (or that the global `defaultNodeWidth` and `defaultNodeHeight` have been configured).
+            <div className="my-root z-[555] h-full w-full rounded-full relative text-lg flex place-items-center justify-center overflow-hidden">
+                <div className="py-2 w-full text-center text-white bg-gray-100 bg-opacity-40 border-t border-b border-gray-500">
+                    {node.text}
+                </div>
+            </div>
+        );
     }
-  }
-}
-</script>
+    return ( // Normal Node
+        // Here, `h-full` and `w-full` apply on the premise that `width` and `height` attributes have been set for the node data (or that the global `defaultNodeWidth` and `defaultNodeHeight` have been configured).
+        <div className="h-full w-full rounded-full flex place-items-center justify-center shadow-md">
+            <IconSwitcher iconName={node.data?.myicon} size={30} />
+            <div
+                className="bg-gray-200 text-black px-2 rounded-lg absolute my-node-text"
+                style={{
+                    marginTop: '100%',
+                    transform: 'translateY(15px)'
+                }}
+            >
+                {node.text}
+            </div>
+        </div>
+    );
+};
+export default CustomNode;
+
 ```
 
+#### Sample code effects
+![Simple](https://www.relation-graph.com/github-doc-images/relation-graph-simple.png)
+</details>
 
-### Sample code effects
-![简单示例效果图](doc/images/relation-graph-simple.png)
-
-Build an income and expenditure chart using relation-graph：
-
-![Build incomestatement](doc/demo-images/demo-for-google-income-statement.png)
-
-Step-by-step construction using relation-graph:
-
-![Build incomestatement](doc/demo-images/how-to-build-income-statement-graph.png)
-
-Preview steps and source code online:
-https://relation-graph.com/demos4vue3/?demoId=demo-for-google-income-statement&t=20240405
-
+---
 
 
 ### Example Projects
 
-- The complete Vue2 sample project:
-- https://github.com/seeksdream/relation-graph-vue3-demo
-
-- The complete Vue3 sample project:
-- https://github.com/seeksdream/relation-graph-react-demo
 
 - The complete React sample project:
-- https://github.com/seeksdream/relation-graph-vue2-demo
+- https://github.com/relation-graph/relation-graph-vue2-project-example
+-
+- The complete Vue3 sample project:
+- https://github.com/relation-graph/relation-graph-react-project-example
+
+- The complete Vue2 sample project:
+- https://github.com/relation-graph/relation-graph-vue3-project-example
+
+- The complete Svelte sample project:
+- https://github.com/relation-graph/relation-graph-svelte-project-example
+
+- The complete Web Components sample project:
+- https://github.com/relation-graph/relation-graph-webcomponents-project-example
 
 
 ### More Examples
-- [https://relation-graph.com/#/demo](https://relation-graph.com/#/demo)
+- [https://relation-graph.com/examples](https://relation-graph.com/examples)
 
 
 
-![relation-graph](doc/relation-graph-images-m.png)
+![relation-graph](https://www.relation-graph.com/github-doc-images/relation-graph-images-m.png)
 
-![center-层级距离设置](doc/demo-images/distance_coefficient.gif)
-![力学布局(force)](doc/demo-images/layout-force.gif)
-![节点展开/收缩的用法](doc/demo-images/adv-expand.gif)
-![节点筛选 & 关系筛选](doc/demo-images/adv-data-filter.gif)
-![节点/连线点击效果2](doc/demo-images/adv-effect2.gif)
-![展开/收缩 时动画效果](doc/demo-images/expand-animation.gif)
-![展开/关闭所有](doc/demo-images/open-all-close-all.gif)
-![布局切换事件](doc/demo-images/before-change-layout.gif)
+![center-Layout](https://www.relation-graph.com/demo-images/distance_coefficient.gif)
+![force-Layout](https://www.relation-graph.com/demo-images/layout-force.gif)
+![expand-node](https://www.relation-graph.com/demo-images/adv-expand.gif)
+![data-filter](https://www.relation-graph.com/demo-images/adv-data-filter.gif)
+![event](https://www.relation-graph.com/demo-images/adv-effect2.gif)
+![animation](https://www.relation-graph.com/demo-images/expand-animation.gif)
+![event-commbo](https://www.relation-graph.com/demo-images/open-all-close-all.gif)
+![switch-layout](https://www.relation-graph.com/demo-images/before-change-layout.gif)
 
 ### The complete sample project
 
 - The complete Vue2 sample project：
-- [https://github.com/seeksdream/relation-graph-vue2-demo(Vite)](https://github.com/seeksdream/relation-graph-vue2-demo)
-- [https://github.com/seeksdream/relation-graph-vue2-demo(Webpack)](https://github.com/seeksdream/relation-graph-webpack)
+- [https://github.com/relation-graph/relation-graph-vue2-project-example(Vite)](https://github.com/seeksdream/relation-graph-vue2-demo)
+- [https://github.com/relation-graph/relation-graph-vue2-project-example(Webpack)](https://github.com/seeksdream/relation-graph-webpack)
 
 - The complete Vue3 sample project：
-- https://github.com/seeksdream/relation-graph-vue3-demo
+- https://github.com/relation-graph/relation-graph-vue3-project-example
 
 - The complete React sample project：
-- https://github.com/seeksdream/relation-graph-react-demo
+- https://github.com/relation-graph/relation-graph-react-project-example
 
 
 ### More info
@@ -177,7 +298,7 @@ https://relation-graph.com/demos4vue3/?demoId=demo-for-google-income-statement&t
 
 - My WhatsApp:
 
-  <img src="doc/images/Whatsapp.png" width="200" />
+  <img src="https://www.relation-graph.com/github-doc-images/Whatsapp.png" width="200" />
 
 - QQ：3235808353
 

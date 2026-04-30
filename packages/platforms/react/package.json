@@ -5,30 +5,47 @@
   "scripts": {
     "dev": "vite",
     "start": "vite",
-    "build": "vite build",
+    "build": "vite build && RG_BUILD_TARGET=ssr vite build",
     "tsc": "vue-tsc --declaration --emitDeclarationOnly --declarationDir ./types src/index.tsx"
   },
-  "dependencies": {
-
+  "main": "dist/relation-graph.js",
+  "module": "dist/relation-graph.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "dist/index.d.ts",
+      "node": "dist/relation-graph.ssr.mjs",
+      "import": "dist/relation-graph.mjs",
+      "require": "dist/relation-graph.js",
+      "default": "dist/relation-graph.mjs"
+    },
+    "./style.css": "dist/style.css"
   },
+  "unpkg": "dist/relation-graph.umd.js",
+  "jsdelivr": "dist/relation-graph.umd.js",
+  "style": "dist/style.css",
+  "sideEffects": [
+    "dist/*.css"
+  ],
+  "dependencies": {},
   "devDependencies": {
-    "@types/node": "^16.18.12",
     "@types/estree": "0.0.45",
+    "@types/node": "^16.18.12",
     "@types/react": "^16.9.46",
     "@types/react-dom": "^17.0.9",
     "@types/react-router": "^5.1.16",
     "@types/react-router-dom": "^5.1.8",
     "@types/video.js": "^7.3.11",
-    "sass": "^1.30.0",
+    "@vitejs/plugin-react": "3.0.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
     "react-svg": "^14.0.5",
+    "sass": "^1.30.0",
     "vite": "^3.2.0",
-    "@vitejs/plugin-react": "3.0.1",
-    "vite-plugin-style-inject": "^0.0.1",
+    "vite-plugin-dts": "^4.5.4",
     "vue-tsc": "^1.2.0"
   }
 }

@@ -1,0 +1,98 @@
+
+.rg-editing-bar {
+    user-select: none;
+    pointer-events: none;
+    position: absolute;
+    border-radius: 5px;
+    padding: 3px;
+    box-sizing: border-box;
+    display: flex;
+    place-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+
+    .rg-gee-icon {
+        background-color: rgba(214, 3, 246, 0.5);
+        pointer-events: auto;
+        min-width: 20px;
+        min-height: 20px;
+        border-radius: 5px;
+        box-sizing: border-box;
+        display: flex;
+        place-items: center;
+        justify-content: center;
+        cursor: pointer;
+
+        &:hover {
+            background-color: rgba(214, 3, 246, 1);
+            color: #ffffff;
+        }
+    }
+}
+
+.rg-connect-source-handle {
+    pointer-events: auto;
+    width: fit-content;
+    height: fit-content;
+}
+
+.rg-editing-bar-top {
+    width: fit-content;
+    height: fit-content;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+    top: -15px;
+}
+
+.rg-editing-bar-bottom {
+    width: fit-content;
+    height: fit-content;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    bottom: -15px;
+}
+
+.rg-editing-bar-left {
+    width: fit-content;
+    height: fit-content;
+    left: -15px;
+    top: 50%;
+    transform: translateX(-100%) translateY(-50%);
+}
+
+.rg-editing-bar-right {
+    width: fit-content;
+    height: fit-content;
+    right: -15px;
+    top: 50%;
+    transform: translateX(100%) translateY(-50%);
+}
+
+.rg-editing-bar-tl {
+    width: 30px;
+    height: 30px;
+    right: calc(100% + 10px);
+    top: -40px;
+}
+
+.rg-editing-bar-tr {
+    width: 30px;
+    height: 30px;
+    left: calc(100% + 10px);
+    top: -40px;
+}
+
+.rg-editing-bar-bl {
+    width: 30px;
+    height: 30px;
+    right: calc(100% + 10px);
+    bottom: -40px;
+}
+
+.rg-editing-bar-br {
+    width: 30px;
+    height: 30px;
+    left: calc(100% + 10px);
+    bottom: -40px;
+}

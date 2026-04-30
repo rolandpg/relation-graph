@@ -1,0 +1,212 @@
+/*****************************[toolbar]****************************************/
+
+
+.rg-toolbar {
+    user-select: none;
+    pointer-events: all;
+    display: flex;
+    position: absolute;
+    z-index: 300;
+    background-color: #ffffff;
+    color: #333;
+    --rg-toolbar-hover-bg-color: rgba(220, 220, 220, 0.5);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 0 1px 0 rgba(0, 0, 0, 0.4);
+    //border: 1px solid #ccc;
+    box-sizing: border-box;
+    border-radius: 5px;
+    width: fit-content;
+    height: fit-content;
+    place-items: center;
+    justify-content: center;
+    gap: 3px;
+    backdrop-filter: blur(5px);
+    .rg-icon {
+        flex-grow: 1;
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+        overflow: hidden;
+    }
+
+    .rg-mb-button svg {
+        margin: auto;
+    }
+
+    .rg-mb-button-on {
+        //color: #2E74B5;
+    }
+
+    .rg-mb-button:hover {
+        background-color: var(--rg-toolbar-hover-bg-color);
+    }
+
+    .rg-loading-icon {
+        animation: turn 1s linear infinite;
+    }
+
+    @keyframes turn {
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+        25% {
+            -webkit-transform: rotate(90deg);
+        }
+        50% {
+            -webkit-transform: rotate(180deg);
+        }
+        75% {
+            -webkit-transform: rotate(270deg);
+        }
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    .rg-current-zoom {
+        margin-top: 0px;
+        font-size: 10px;
+        text-align: center;
+        border-radius: 3px;
+        cursor: pointer;
+
+        &:hover {
+            background-color: var(--rg-toolbar-hover-bg-color);
+        }
+    }
+
+    .rg-mb-button {
+        width: 35px;
+        height: 35px;
+        margin-top: 0px;
+        opacity: 1;
+        cursor: pointer;
+        font-size: 18px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-items: center;
+        border-radius: 3px;
+    }
+
+
+    &.rg-toolbar-v {
+        //width: 45px;
+        flex-flow: column;
+        //max-height: 270px;
+        padding: 10px 3px;
+
+        .rg-current-zoom {
+            width: 35px;
+            height: 25px;
+            line-height: 25px;
+        }
+    }
+
+    &.rg-toolbar-h {
+        //height: 45px;
+        //width: 300px;
+        padding: 3px 10px;
+
+        .rg-current-zoom {
+            width: fit-content;
+            padding: 0px 5px;
+            height: 35px;
+            line-height: 35px;
+        }
+    }
+
+    &.rg-toolbar-h-right {
+        right: 15px;
+    }
+
+    &.rg-toolbar-h-left {
+        left: 15px;
+    }
+
+    &.rg-toolbar-h-center {
+        //left: calc((100% - 260px) / 2);
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    &.rg-toolbar-v-top {
+        top: 15px;
+    }
+
+    &.rg-toolbar-v-bottom {
+        bottom: 15px;
+    }
+
+    &.rg-toolbar-v-center {
+        //top: calc((100% - 260px) / 2);
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    &.rg-xs-toolbar {
+        .rg-mb-button {
+            width: 25px;
+            height: 25px;
+        }
+        .rg-icon {
+            width: 14px;
+            height: 14px;
+        }
+    }
+
+    &.rg-xs-toolbar.rg-toolbar-v {
+        //width: 31px;
+        //max-height: 270px;
+        padding: 3px;
+
+        .rg-current-zoom {
+            width: 30px;
+            height: 25px;
+            line-height: 25px;
+        }
+    }
+
+    &.rg-xs-toolbar.rg-toolbar-h {
+        //height: 31px;
+        //width: 300px;
+        padding: 3px;
+
+        .rg-current-zoom {
+            width: 35px;
+            height: 25px;
+            line-height: 25px;
+        }
+    }
+
+    &.rg-xs-toolbar.rg-toolbar-h .rg-mb-button {
+        width: 25px;
+        height: 25px;
+    }
+
+    &.rg-xs-toolbar.rg-toolbar-h-right {
+        right: 10px;
+    }
+
+    &.rg-xs-toolbar.rg-toolbar-h-left {
+        left: 10px;
+    }
+
+    &.rg-xs-toolbar.rg-toolbar-h-center {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    &.rg-xs-toolbar.rg-toolbar-v-top {
+        top: 10px;
+    }
+
+    &.rg-xs-toolbar.rg-toolbar-v-bottom {
+        bottom: 10px;
+    }
+
+    &.rg-xs-toolbar.rg-toolbar-v-center {
+        top: 50%;
+        transform: translateY(-50%);
+    }
+}
+

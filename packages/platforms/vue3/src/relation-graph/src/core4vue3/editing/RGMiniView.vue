@@ -1,60 +1,66 @@
 <template>
-  <div
-    class="rel-miniview"
-    :class="['rel-miniview-' + (position || 'br')]"
-    ref="$rgMiniView"
-  >
-    <canvas
-      ref="$rgMiniViewCanvas"
-      :class="{
-      'rel-mv-canvas-reset': options.miniViewVisibleHandle.emptyContent
-      }"
-      @click="onClickCanvas"
-    />
     <div
-      class="rel-mv-visible-area"
-      @mousedown="onMouseDown"
-      :style="{
-      left: options.miniViewVisibleHandle.x + 'px',
-      top: options.miniViewVisibleHandle.y + 'px',
-      width: options.miniViewVisibleHandle.width + 'px',
-      height: options.miniViewVisibleHandle.height + 'px'
-    }"
-    ></div>
-  </div>
+            class="rg-miniview"
+            :class="[
+                    'rg-miniview-' + (position || 'br'),
+                    $attrs.className
+                    ]"
+            ref="$rgMiniView"
+            :style="{
+                ...$attrs.style,
+                '--miniview-width': width,
+                '--miniview-height': height
+            }"
+    >
+        <div class="rg-miniview-container">
+            <canvas
+                    ref="$rgMiniViewCanvas"
+                    :class="{
+                        'rg-mv-canvas-reset': options.miniViewVisibleHandle.emptyContent
+                    }"
+                    @click="onClickCanvas"
+            />
+            <div
+                    class="rg-mv-visible-area"
+                    @mousedown="onMouseDown"
+                    :style="{
+                        transform: `translate(${options.miniViewVisibleHandle.x}px, ${options.miniViewVisibleHandle.y}px)`,
+                        // left: `${options.miniViewVisibleHandle.x}px`,
+                        // top: `${options.miniViewVisibleHandle.y}px`,
+                        width: options.miniViewVisibleHandle.width + 'px',
+                        height: options.miniViewVisibleHandle.height + 'px'
+                    }"
+            ></div>
+        </div>
+    </div>
 </template>
 
 <script lang="ts" setup>
-import {RGMiniViewProps, RGUserEvent, RGWidgetPosition} from "../../../../types";
-import {onMounted, onUnmounted, ref, computed, inject} from "vue";
-import {graphKey} from "../../../../constants";
-const graph = inject(graphKey)
-const options = computed(() => {
-  return graph!.options!;
-})
-const graphInstance = computed(() => {
-  return graph!.instance!;
-})
+import {RGUserEvent, RGWidgetPosition} from "../../../../types";
+import {computed, onMounted, onUnmounted, ref} from "vue";
+import {useGraphInstance} from "../../hooks/useGraphInstance";
+
+const graphInstance = useGraphInstance();
+const options = computed(() => graphInstance.dataStores.optionsRef.value);
 const props = defineProps<{
-  position?: RGWidgetPosition,
-  width?: string,
-  height?: string
+    position?: RGWidgetPosition,
+    width?: string,
+    height?: string,
+    className?: string
 }>(); // RGMiniViewProps
 const $rgMiniView = ref<HTMLDivElement>();
 const $rgMiniViewCanvas = ref<HTMLCanvasElement>();
 onMounted(() => {
-  options.value.showMiniView = true;
-  $rgMiniView.value!.style.setProperty('--mv-width', (props.width || '150px'));
-  $rgMiniView.value!.style.setProperty('--mv-height', (props.height || '150px'));
-  graphInstance.value.setMiniViewCanvas($rgMiniViewCanvas.value!);
+    graphInstance.onMiniViewMounted();
+    graphInstance.setMiniViewCanvas($rgMiniViewCanvas.value!);
 });
 onUnmounted(() => {
-  options.value.showMiniView = false;
+    graphInstance.onMiniViewUnMounted();
 });
 const onMouseDown = (e: RGUserEvent) => {
-  graphInstance.value.onVisiableViewHandleDragStart(e);
+    graphInstance.onVisibleViewHandleDragStart(e);
 }
 const onClickCanvas = (e: RGUserEvent) => {
-  graphInstance.value.resetByVisiableView(e);
+    graphInstance.resetByVisiableView(e);
 }
 </script>

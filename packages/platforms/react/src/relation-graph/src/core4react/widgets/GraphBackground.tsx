@@ -1,19 +1,12 @@
-import React, {useRef, useEffect, useContext} from 'react';
-import {RelationGraphStoreContext} from "../store/reducers/StockStore";
-import {RGBackgroundProps} from "../../../../../../../relation-graph-models/types";
+import React, {PropsWithChildren, useRef, useEffect} from 'react';
+import {RGBackgroundProps} from "../../../../../../../types";
+import {useGraphInstance} from "../../hooks/useGraphInstance";
 
-const GraphBackground:React.FC<RGBackgroundProps> = ({ children, forDisplay, forImage }) => {
-  const graphInstance = useContext(RelationGraphStoreContext);
-  const options = graphInstance && graphInstance.options;
+const GraphBackground:React.FC<PropsWithChildren<RGBackgroundProps>> = ({ children, forDisplay, forImage }) => {
+  const graphInstance = useGraphInstance();
   const $backgroundRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Set background styles
-    $backgroundRef.current!.style.backgroundColor = 'transparent';
-    $backgroundRef.current!.style.backgroundImage = 'none';
-    $backgroundRef.current!.style.backgroundRepeat = 'no-repeat';
-
-    // Replace the following line with the appropriate logic for setting the background in your React app
     graphInstance.setBackgroundDom($backgroundRef.current, forDisplay, forImage);
     return () => {
       graphInstance.setBackgroundDom(null, forDisplay, forImage);
@@ -21,7 +14,7 @@ const GraphBackground:React.FC<RGBackgroundProps> = ({ children, forDisplay, for
   }, []);
   return (
     <div
-      className={`rel-background`}
+      className={`rg-background`}
       ref={$backgroundRef}
     >
       {children}

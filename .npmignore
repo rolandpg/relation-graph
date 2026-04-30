@@ -5,6 +5,8 @@ node_modules/
 examples/
 /platforms
 platforms/
+/packages
+packages/
 /src
 src/
 /dist
@@ -15,7 +17,9 @@ doc/
 web/
 npm/
 public/
-packages/
+packages/platforms/relation-graph-react/
+packages/platforms/relation-graph-vue2/
+packages/platforms/relation-graph-vue3/
 play/
 /public
 package-lock.json
@@ -28,3 +32,10 @@ syncSrc.sh
 tsconfig.json
 build-all.sh
 publish-all.sh
+send-to-test.sh
+relation-graph-react/
+relation-graph-vue2/
+relation-graph-vue3/
+ai-prompt.md
+dev-tools/
+.npmrc

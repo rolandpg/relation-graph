@@ -1,21 +1,22 @@
 import React from 'react';
 import {RGNodeExpandHolderProps} from "../../../types-react";
+import RGIcons from "./widgets/RGIcons";
 
-const RGNodeExpandHolder: React.FC<RGNodeExpandHolderProps> = ({expandButtonClass, expandOrCollapseNode, expandHolderPosition, color}) => {
+const RGNodeExpandHolder: React.FC<RGNodeExpandHolderProps> = ({node, expandOrCollapseNode, expandHolderPosition}) => {
+  const expandButtonClass = node.expanded === false ? 'rg-node-expand-button c-expanded' : 'rg-node-expand-button c-collapsed';
+
   return (
     <div
-      className={`c-expand-positon-${expandHolderPosition} c-btn-open-close`}
+      className={`rg-node-expand-holder c-expand-positon-${expandHolderPosition}`}
     >
-      <span
+
+      <div
         className={expandButtonClass}
-        style={{ backgroundColor: color }}
-        onClickCapture={(e) => {
-          expandOrCollapseNode(e);
-        }}
-        onTouchEnd={(e) => {
-          expandOrCollapseNode(e);
-        }}
-      ></span>
+        onClickCapture={expandOrCollapseNode}
+        onTouchEnd={expandOrCollapseNode}
+      >
+        {node.expanded === false ? <RGIcons iconName="icon-fangda" /> : <RGIcons iconName="icon-suoxiao" />}
+      </div>
     </div>
   );
 };

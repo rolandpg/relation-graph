@@ -1,50 +1,58 @@
-import React, { useContext, useEffect } from 'react';
-import {RelationGraphStoreContext, RGUpdateSingalContext} from '../store/reducers/StockStore';
+import React, { useEffect } from 'react';
+import {useGraphInstance} from "../../hooks/useGraphInstance";
+import {useGraphStore} from "../../hooks/useGraphStore";
 
-const RGEditingReferenceLine:React.FC = () => {
-  const graphInstance = useContext(RelationGraphStoreContext);
-  const updateSingal = useContext(RGUpdateSingalContext);
-  const options = graphInstance && graphInstance.options;
+const RGEditingReferenceLine:React.FC<{
+  showText?: boolean;
+  adsorption?: boolean;
+}> = ({showText, adsorption}) => {
+  const graphInstance = useGraphInstance();
+  const {options} = useGraphStore();
 
   useEffect(() => {
-    options.editingReferenceLine.show = true;
-
+    graphInstance.onReferenceLineMounted(adsorption);
     return () => {
-      options.editingReferenceLine.show = false;
+      graphInstance.onReferenceLineUnMounted();
     };
   }, [options]);
 
   return (
-    <div className="rel-editing-referline"
+    <div className="rg-editing-referline"
       style={{
         display: options.editingReferenceLine.show ? 'block':'none',
       }}
     >
       {options.editingReferenceLine.directionV && (
         <div
-          className="rel-editing-referline-v"
+          className="rg-referline rg-referline-v"
           style={{
-            left: options.editingReferenceLine.v_x + 'px',
-            top: options.editingReferenceLine.v_y + 'px',
+            transform: `translate(var(--rg-refer-offset), 0px) translate(${options.editingReferenceLine.v_x}px, ${options.editingReferenceLine.v_y}px)`,
             height: options.editingReferenceLine.v_height + 'px',
           }}
         >
           <div className="referline">
-            <div>{options.editingReferenceLine.v_height}px</div>
+            {
+              showText !== false && (
+                    <div>{Math.round(options.editingReferenceLine.v_height)}px</div>
+                )
+            }
           </div>
         </div>
       )}
       {options.editingReferenceLine.directionH && (
         <div
-          className="rel-editing-referline-h"
+          className="rg-referline rg-referline-h"
           style={{
-            left: options.editingReferenceLine.h_x + 'px',
-            top: options.editingReferenceLine.h_y + 'px',
+            transform: `translate(0px, var(--rg-refer-offset)) translate(${options.editingReferenceLine.h_x}px, ${options.editingReferenceLine.h_y}px)`,
             width: options.editingReferenceLine.h_width + 'px',
           }}
         >
           <div className="referline">
-            <div>{options.editingReferenceLine.h_width}px</div>
+            {
+              showText !== false && (
+                    <div>{Math.round(options.editingReferenceLine.h_width)}px</div>
+                )
+            }
           </div>
         </div>
       )}

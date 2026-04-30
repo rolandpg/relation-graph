@@ -1,86 +1,94 @@
 <script lang="ts" setup>
-import { computed, inject, onMounted, ref } from 'vue'
-import { devLog } from '../../../../../../relation-graph-models/utils/RGCommon'
-import {graphInstanceKey, graphKey} from '../../../constants'
-import type {RGUserEvent} from '../../../../../../relation-graph-models/types'
-import RelationGraphSingleGraph from './RGGraph.vue'
+import {computed, onBeforeUnmount, onMounted, ref} from 'vue'
+import {devLog} from '../../../../../../relation-graph-models/utils/RGCommon'
+import type {RGUserEvent} from '../../../../../../types'
+import RGCanvasContent from './RGCanvasContent.vue'
 import RGEasyView from "./RGEasyView.vue";
+import {useGraphInstance} from "../hooks/useGraphInstance";
 
-const seeksRGCanvas = ref<HTMLDivElement>()
-// const graphInstance$ = inject(graphInstanceKey)
-const graph = inject(graphKey)
+const rgCanvasRef = ref<HTMLDivElement>()
+const rgMapRef = ref<HTMLDivElement>()
+const graphInstance = useGraphInstance();
 
 const options = computed(() => {
-  return graph!.options!;
-})
-const mouseListener = (e:WheelEvent) => {
-  graph.instance!.onMouseWheel(e);
+    return graphInstance.dataStores.optionsRef.value;
+});
+const onDragStart = (e: RGUserEvent) => {
+    graphInstance.onCanvasDragStart(e);
 }
-const onDragStart = (e:RGUserEvent) => {
-  graph.instance!.onCanvasDragStart(e);
+const contextmenu = (e: RGUserEvent) => {
+    graphInstance.onContextmenu(e);
 }
-const contextmenu = (e:RGUserEvent) => {
-  graph.instance!.onContextmenu(e);
+const mouseWheelListener = (e: WheelEvent) => {
+    graphInstance.onMouseWheel(e);
 }
 
 const canvasSizeAndPosition = computed(() => {
-  return {
-    width: `${options.value.canvasSize.width}px`,
-    height: `${options.value.canvasSize.height}px`,
-    'margin-left': `${options.value.canvasOffset.x}px`,
-    'margin-top': `${options.value.canvasOffset.y}px`,
-    'background-color': 'transparent',
-    transform: `scale(${options.value.canvasZoom / 100},${
-        options.value.canvasZoom / 100
-    })`,
-    // 'transform-origin': (this.options.canvasOffset.zoom_buff_x * 100).toFixed(2) + '% ' + (this.options.canvasOffset.zoom_buff_y * 100).toFixed(2) + '%'
-  }
+    const optionsRef = graphInstance.dataStores.optionsRef.value;
+    return {
+        width: `${optionsRef.canvasSize.width}px`,
+        height: `${optionsRef.canvasSize.height}px`,
+        'background-color': 'transparent',
+        'transform': `translate(${optionsRef.canvasOffset.x}px, ${optionsRef.canvasOffset.y}px) scale(${optionsRef.canvasZoom / 100},${options.value.canvasZoom / 100})`
+    }
 })
 onMounted(() => {
-  devLog('[RGCanvas mounted]')
-  graph.instance!.setCanvasDom(seeksRGCanvas.value!)
+    devLog('[RGCanvas mounted]')
+    graphInstance.setCanvasDom(rgCanvasRef.value!)
+    rgMapRef.value?.addEventListener('wheel', mouseWheelListener, { passive: false })
+})
+onBeforeUnmount(() => {
+    rgMapRef.value?.removeEventListener('wheel', mouseWheelListener)
 })
 </script>
 <template>
-  <div
-      :style="{width: '100%',height : '100%', 'background-color': (options.backgroundColor || undefined), 'background-image': (options.backgroundImage ? ('url('+options.backgroundImage+')') : undefined)}"
-      :class="[(options.canvasOpacity === 1 && 'rel-map-ready'),options.layoutClassName, (options.backgroundImageNoRepeat?'rel-map-background-norepeat':'')]"
-      class="rel-map"
-      @contextmenu.prevent="contextmenu($event)"
-      @mousedown.left="onDragStart($event)"
-      @touchstart="onDragStart($event)"
-      @wheel="mouseListener">
-    <RGEasyView />
-    <div ref="seeksRGCanvas" :style="canvasSizeAndPosition" class="rel-map-canvas">
-      <div class="rel-canvas-slot rel-canvas-slot-behind">
-        <slot name="canvas-plug" />
-      </div>
-      <RelationGraphSingleGraph>
-        <template #svg-defs>
-          <slot name="svg-defs" />
-        </template>
-        <template #node="{node}" >
-          <slot :node="node" name="node" />
-        </template>
-        <template #line="{line, link}" >
-          <slot :line="line" :link="link" name="line" />
-        </template>
-        <template #node-expand-holder="{nodeProps, expandHolderPosition, expandButtonClass, color, expandOrCollapseNode}">
-          <slot
-              name="node-expand-holder"
-              :nodeProps="nodeProps"
-              :expandHolderPosition="expandHolderPosition"
-              :expandButtonClass="expandButtonClass"
-              :color="color"
-              :expandOrCollapseNode="expandOrCollapseNode"
-          />
-        </template>
-      </RelationGraphSingleGraph>
-      <div class="rel-canvas-slot rel-canvas-slot-above">
-        <slot name="canvas-plug-above" />
-      </div>
+    <div
+        ref="rgMapRef"
+        class="rg-map"
+        :class="[
+                (options.canvasOpacity === 1 && 'rg-map-ready')
+                 ]"
+        @contextmenu.prevent="contextmenu($event)"
+        @mousedown.left="onDragStart($event)"
+        @touchstart="onDragStart($event)"
+    >
+        <div class="rg-map-background">
+            <slot name="background"/>
+        </div>
+        <div :style="canvasSizeAndPosition" class="rg-map-canvas rg-canvas-behind">
+            <div class="rg-canvas-slot rg-canvas-slot-behind">
+                <slot name="canvas-plug-behind"/>
+            </div>
+        </div>
+        <RGEasyView/>
+        <div ref="rgCanvasRef" :style="canvasSizeAndPosition" class="rg-map-canvas">
+            <RGCanvasContent
+                    :show-easy-view="options.showEasyView"
+                    :creating-line="!!(options.creatingLinePlot && options.newLinkTemplate.fromNode)"
+                    :default-expand-holder-position="options.defaultExpandHolderPosition"
+                    :draggingNodeId="options.draggingNodeId"
+                    :checkedNodeId="options.checkedNodeId"
+                    :defaultLineTextOnPath="options.defaultLineTextOnPath"
+                    :checked-line-id="options.checkedLineId"
+                    :graph-instance-id="options.instanceId"
+            >
+                <template #line="lineSlotProps">
+                    <slot v-bind="lineSlotProps" name="line"/>
+                </template>
+                <template #node="nodeSlotProps">
+                    <slot v-bind="nodeSlotProps" name="node"/>
+                </template>
+                <template #node-expand-button="nodeExpandButtonSlotProps">
+                    <slot name="node-expand-button" v-bind="nodeExpandButtonSlotProps" />
+                </template>
+            </RGCanvasContent>
+        </div>
+        <div :style="canvasSizeAndPosition" class="rg-map-canvas rg-canvas-above">
+            <div class="rg-canvas-slot rg-canvas-slot-above">
+                <slot name="canvas-plug-above"/>
+            </div>
+        </div>
     </div>
-  </div>
 </template>
 <style scoped>
 </style>

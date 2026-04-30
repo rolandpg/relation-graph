@@ -1,63 +1,60 @@
 <template>
-  <div
-      v-show="show"
-      class="rel-watermark"
-      :class="['rel-watermark-' + (position || 'br')]"
-      ref="$watermarkRef"
-  >
-    <slot />
-  </div>
+    <div
+            v-show="show"
+            class="rg-watermark"
+            :class="['rg-watermark-' + (position || 'br')]"
+            ref="$watermarkRef"
+            :style="{
+                '--watermark-width': width,
+                '--watermark-height': height
+            }"
+    >
+        <slot/>
+    </div>
 </template>
 
 <script lang="ts" setup>
-import {computed, inject, onMounted, onUnmounted, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref} from "vue";
 import {RGWidgetPosition} from "../../../../types";
-import {graphKey} from "../../../../constants";
+import {useGraphInstance} from "../../hooks/useGraphInstance";
+
+const graphInstance = useGraphInstance();
 
 const props = withDefaults(defineProps<{
-  forImage?: boolean,
-  forDisplay?: boolean,
-  position?: RGWidgetPosition,
-  width?: string,
-  height?: string,
+    forImage?: boolean,
+    forDisplay?: boolean,
+    position?: RGWidgetPosition,
+    width?: string,
+    height?: string,
 }>(), {
-  forImage: true,
-  forDisplay: false,
-  position: 'br',
-  width: '200px',
-  height: '200px',
+    forImage: true,
+    forDisplay: false,
+    position: 'br'
 }); // RGWatermarkProps
-const graph = inject(graphKey)
-const options = computed(() => {
-  return graph!.options!;
-})
-const graphInstance = computed(() => {
-  return graph!.instance!;
-})
+const options = computed(() => graphInstance.dataStores.optionsRef.value);
 const show = computed(() => {
-  let isShow = false;
-  if (options.value.snapshotting) {
-    if (props.forImage === false) {
-      isShow = false;
+    let visable = false;
+    if (options.value.snapshotting) {
+        if (props.forImage === false) {
+            visable = false;
+        } else {
+            visable = true;
+        }
     } else {
-      isShow = true;
+        if (props.forDisplay === true) {
+            visable = true;
+        } else {
+            visable = false;
+        }
     }
-  } else {
-    if (props.forDisplay === true) {
-      isShow = true;
-    } else {
-      isShow = false;
-    }
-  };
-  return isShow;
+    ;
+    return visable;
 });
 const $watermarkRef = ref();
 onMounted(() => {
-  $watermarkRef.value.style.setProperty('--mv-width', props.width || '200px');
-  $watermarkRef.value.style.setProperty('--mv-height', props.height || '200px');
-  graphInstance.value.setWatermarkDom($watermarkRef.value, props.forImage, props.forDisplay, props.position);
+    graphInstance.setWatermarkDom($watermarkRef.value, props.forImage, props.forDisplay, props.position);
 });
 onUnmounted(() => {
-  graphInstance.value.setWatermarkDom(null, props.forImage, props.forDisplay);
+    graphInstance.setWatermarkDom(null, props.forImage, props.forDisplay);
 });
 </script>

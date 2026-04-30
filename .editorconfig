@@ -1,0 +1,27 @@
+# .editorconfig
+
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# ⬇️ 专门针对 WebStorm 的魔法配置 ⬇️
+
+[*.{js,jsx,ts,tsx,vue,svelte}]
+# 强制 JavaScript 不使用别名 (Never)
+ij_javascript_use_path_aliases = never
+# 强制 TypeScript 不使用别名 (Never)
+ij_typescript_use_path_aliases = never
+
+# 额外福利：你还可以强制双引号或单引号，避免导入风格不一致
+ij_javascript_quote_style = single
+# ij_typescript_quote_style = single
+# 【关键配置】自动导入时使用 'import type'
+# true  = 总是使用 (import type { X } from ...)
+# false = 不使用
+ij_typescript_use_import_type = always

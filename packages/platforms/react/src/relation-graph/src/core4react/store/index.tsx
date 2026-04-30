@@ -1,15 +1,5 @@
-import {RelationGraphStoreContext, RGUpdateContext, RGUpdateSingalContext} from './reducers/StockStore';
-// import { stockStoreStateEmpty, rgReducer, RelationGraphStoreContext, RelationGraphStoreDispatchContext } from './reducers/StockStore';
-// export const RelationGraphProvider: React.FC<{children: React.ReactElement}> = ({ children }) => {
-//   const [rgStoreState, rgDispatch] = useReducer(rgReducer, stockStoreStateEmpty);
-//   return (
-//     <RelationGraphStoreDispatchContext.Provider value={ rgDispatch }>
-//       <RelationGraphStoreContext.Provider value={ rgStoreState }>
-//         {children}
-//       </RelationGraphStoreContext.Provider>
-//     </RelationGraphStoreDispatchContext.Provider>
-//   );
-// };
+import {RelationGraphStoreContext, RGUpdateContext, RGViewDataContext, RGUpdateSignalContext} from './reducers/RGStore';
 export const RelationGraphProvider = RelationGraphStoreContext.Provider;
 export const RGUpdateProvider = RGUpdateContext.Provider;
-export const RGUpdateSingalProvider = RGUpdateSingalContext.Provider;
+export const RGUpdateSignalProvider = RGUpdateSignalContext.Provider;
+export const RGViewDataProvider = RGViewDataContext.Provider;

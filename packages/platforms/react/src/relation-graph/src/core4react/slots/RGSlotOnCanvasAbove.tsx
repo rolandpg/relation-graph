@@ -1,11 +1,6 @@
-import React, {useContext} from 'react';
-import {RelationGraphStoreContext} from "../store/reducers/StockStore";
+import React, {PropsWithChildren} from 'react';
 
-const RGSlotOnCanvasAbove: React.FC = ({ children }) => {
-  const graphInstance = useContext(RelationGraphStoreContext);
-  if (!graphInstance) {
-    return null;
-  }
-  return <>{children}</>;
+const RGSlotOnCanvasAbove: React.FC<PropsWithChildren<{}>> = () => {
+  return <></>;
 };
 export default RGSlotOnCanvasAbove;
