@@ -1,3 +1,13 @@
+relation-graph v3.x has now been released, with support for more platforms while keeping the code cleaner and more elegant. View the architecture here:
+
+[https://relation-graph.com/docs/multi-platform-architecture](https://relation-graph.com/docs/multi-platform-architecture)
+
+At the same time, Relation Graph’s structure is naturally LLM-friendly. Because its architecture is clear, its knowledge is easier to understand. The knowledge files are located at:
+
+`<source-code-root>/knowledge-for-ai`
+
+---
+
 <img src="https://www.relation-graph.com/github-doc-images/relation-graph-yellow-small.png" width="60" />
 
 # relation-graph
