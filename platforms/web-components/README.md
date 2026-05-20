@@ -1,19 +1,20 @@
+
+
 <img src="https://www.relation-graph.com/github-doc-images/relation-graph-yellow-small.png" width="60" />
 
 # relation-graph
 
 [English ](README.md) | [简体中文](README-zh.md)
 
-- **relation-graph** 是一个关系数据展示组件，支持 React、Vue 2、Vue 3、Svelte 和 WebComponent。它允许用户通过插槽，使用“通用 HTML 元素、Vue 组件、React 组件”等方式对图形元素进行完全自定义，并提供实用的 API 接口，方便开发交互式图形应用。<br />
-- 除了典型的关系数据展示能力之外，relation-graph 还支持作为绘图板使用。你可以在绘图板上放置任意内容，只需给想要连接的元素设置 id，并定义“element lines（元素连线）”。这样就可以轻松构建支持任意连接、缩放、拖拽，以及通过 API 进行动态交互的绘图板。
-
-### 文档与示例
+- **relation-graph** is a relationship data display component that supports React, Vue 2, Vue 3, Svelte and WebComponent. It enables users to fully customize graphical elements using "common HTML elements, Vue components, React components" through slots, and provides practical API interfaces to facilitate the development of interactive graphical applications."<br />
+-  In addition to the typical relationship data display functionality, the relation-graph also supports being used as a drawing board. You can place any content on the drawing board, simply by setting an id for the elements you want to connect, and defining "element lines." This allows for the easy creation of a drawing board that supports the creation of arbitrary connections, zooming and dragging, and dynamic interactions through the API.
+### Docs & Examples
 
 - [https://relation-graph.com](https://relation-graph.com)
 
-上述网站包含文档、在线演示以及面向软件开发者的可视化配置工具。
+The website above includes documentation, online demos, and a visual configuration tool for software developers.
 
-### 快速开始
+### Getting Started
 
 ```shell script
 # React
@@ -37,10 +38,10 @@ import RelationGraph from '@relation-graph/vue2'
 // Svelte:
 import RelationGraph from '@relation-graph/svelte'
 // Web Components:
-// 使用自定义元素 <relation-graph></relation-graph>;
+// Use the custom element <relation-graph></relation-graph>;
 ```
 <details>
-  <summary>在 react 中使用 <strong>relation-graph</strong></summary>
+  <summary>Use <strong>relation-graph</strong> in react</summary>
 #### `index.tsx`
 ```typescript jsx
 import { RGProvider } from '@relation-graph/react';
@@ -162,7 +163,7 @@ const MyGraph: React.FC = () => {
                 onNodeClick={onNodeClick}
                 onLineClick={onLineClick}
             >
-                {/* 5. 节点内容插槽 */}
+                {/* 5. Node content slot */}
                 <RGSlotOnNode>
                     {({ node, checked, dragging }: RGNodeSlotProps) => (
                         <CustomNode node={node} checked={checked} dragging={dragging} />
@@ -203,9 +204,9 @@ const IconSwitcher = ({ iconName, size = 24, color = 'currentColor' }) => {
     }
 };
 const CustomNode: React.FC<RGNodeSlotProps> = ({ node }) => {
-    if (node.id === '2') { // 根节点
+    if (node.id === '2') { // rootNode
         return (
-            // 这里的 `h-full` 和 `w-full` 生效的前提是：节点数据中已设置 `width` 和 `height` 属性，或者全局已配置 `defaultNodeWidth` 和 `defaultNodeHeight`。
+            // Here, `h-full` and `w-full` apply on the premise that `width` and `height` attributes have been set for the node data (or that the global `defaultNodeWidth` and `defaultNodeHeight` have been configured).
             <div className="my-root z-[555] h-full w-full rounded-full relative text-lg flex place-items-center justify-center overflow-hidden">
                 <div className="py-2 w-full text-center text-white bg-gray-100 bg-opacity-40 border-t border-b border-gray-500">
                     {node.text}
@@ -213,8 +214,8 @@ const CustomNode: React.FC<RGNodeSlotProps> = ({ node }) => {
             </div>
         );
     }
-    return ( // 普通节点
-        // 这里的 `h-full` 和 `w-full` 生效的前提是：节点数据中已设置 `width` 和 `height` 属性，或者全局已配置 `defaultNodeWidth` 和 `defaultNodeHeight`。
+    return ( // Normal Node
+        // Here, `h-full` and `w-full` apply on the premise that `width` and `height` attributes have been set for the node data (or that the global `defaultNodeWidth` and `defaultNodeHeight` have been configured).
         <div className="h-full w-full rounded-full flex place-items-center justify-center shadow-md">
             <IconSwitcher iconName={node.data?.myicon} size={30} />
             <div
@@ -233,84 +234,85 @@ export default CustomNode;
 
 ```
 
-#### 示例代码效果
-![简单示例效果图](https://www.relation-graph.com/github-doc-images/relation-graph-simple.png)
+#### Sample code effects
+![Simple](https://www.relation-graph.com/github-doc-images/relation-graph-simple.png)
 </details>
 
 ---
 
 
-### 示例项目
+### Example Projects
 
-- 完整 Vue2 示例项目：
+- The complete Vue2 sample project:
 - https://github.com/relation-graph/relation-graph-startup-for-vue2
-- [在线运行完整 Vue2 示例项目](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-vue2/main)
+- [Run the complete Vue2 sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-vue2/main)
 
-- 完整 Vue3 示例项目：
+- The complete Vue3 sample project:
 - https://github.com/relation-graph/relation-graph-startup-for-vue3
-- [在线运行完整 Vue3 示例项目](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-vue3/main)
+- [Run the complete Vue3 sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-vue3/main)
 
-- 完整 React 示例项目：
+- The complete React sample project:
 - https://github.com/relation-graph/relation-graph-startup-for-react
-- [在线运行完整 React 示例项目](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-react/main)
+- [Run the complete React sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-react/main)
 
-- 完整 Svelte 示例项目：
+- The complete Svelte sample project:
 - https://github.com/relation-graph/relation-graph-startup-for-svelte
-- [在线运行完整 Svelte 示例项目](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-svelte/main)
+- [Run the complete Svelte sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-svelte/main)
 
-- 完整 Web Components 示例项目：
+- The complete Web Components sample project:
 - https://github.com/relation-graph/relation-graph-startup-for-web-component
-- [在线运行完整 Web Components 示例项目](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-web-component/main)
+- [Run the complete Web Components sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-web-component/main)
 
 
-### 更多示例
+### More Examples
 - [https://relation-graph.com/examples](https://relation-graph.com/examples)
 
 
 
 ![relation-graph](https://www.relation-graph.com/github-doc-images/relation-graph-images-m.png)
 
-![center-层级距离设置](https://www.relation-graph.com/demo-images/distance_coefficient.gif)
-![力学布局(force)](https://www.relation-graph.com/demo-images/layout-force.gif)
-![节点展开/收缩的用法](https://www.relation-graph.com/demo-images/adv-expand.gif)
-![节点筛选 & 关系筛选](https://www.relation-graph.com/demo-images/adv-data-filter.gif)
-![节点/连线点击效果2](https://www.relation-graph.com/demo-images/adv-effect2.gif)
-![展开/收缩 时动画效果](https://www.relation-graph.com/demo-images/expand-animation.gif)
-![展开/关闭所有](https://www.relation-graph.com/demo-images/open-all-close-all.gif)
-![布局切换事件](https://www.relation-graph.com/demo-images/before-change-layout.gif)
+![center-Layout](https://www.relation-graph.com/demo-images/distance_coefficient.gif)
+![force-Layout](https://www.relation-graph.com/demo-images/layout-force.gif)
+![expand-node](https://www.relation-graph.com/demo-images/adv-expand.gif)
+![data-filter](https://www.relation-graph.com/demo-images/adv-data-filter.gif)
+![event](https://www.relation-graph.com/demo-images/adv-effect2.gif)
+![animation](https://www.relation-graph.com/demo-images/expand-animation.gif)
+![event-commbo](https://www.relation-graph.com/demo-images/open-all-close-all.gif)
+![switch-layout](https://www.relation-graph.com/
 
-### 完整示例项目
+### The complete sample project
 
-- 完整 Vue2 示例项目：
+- The complete Vue2 sample project:
 - https://github.com/relation-graph/relation-graph-startup-for-vue2
-- [在线运行完整 Vue2 示例项目](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-vue2/main)
+- [Run the complete Vue2 sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-vue2/main)
 
-- 完整 Vue3 示例项目：
+- The complete Vue3 sample project:
 - https://github.com/relation-graph/relation-graph-startup-for-vue3
-- [在线运行完整 Vue3 示例项目](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-vue3/main)
+- [Run the complete Vue3 sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-vue3/main)
 
-- 完整 React 示例项目：
+- The complete React sample project:
 - https://github.com/relation-graph/relation-graph-startup-for-react
-- [在线运行完整 React 示例项目](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-react/main)
+- [Run the complete React sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-react/main)
 
-- 完整 Svelte 示例项目：
+- The complete Svelte sample project:
 - https://github.com/relation-graph/relation-graph-startup-for-svelte
-- [在线运行完整 Svelte 示例项目](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-svelte/main)
+- [Run the complete Svelte sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-svelte/main)
 
-- 完整 Web Components 示例项目：
+- The complete Web Components sample project:
 - https://github.com/relation-graph/relation-graph-startup-for-web-component
-- [在线运行完整 Web Components 示例项目](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-web-component/main)
+- [Run the complete Web Components sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-web-component/main)
 
 
-### 更多信息
+### More info
 
 - [https://relation-graph.com](https://relation-graph.com)
 
 
-### 联系我
+### Contact me
 
-- 我的 WhatsApp：
+- My WhatsApp:
 
   <img src="https://www.relation-graph.com/github-doc-images/Whatsapp.png" width="200" />
 
 - QQ：3235808353
+

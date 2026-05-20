@@ -1,7 +1,7 @@
 /**
  * relation-graph
  * Website: http://www.relation-graph.com/
- * Github: https://github.com/seeksdream/relation-graph
+ * Github: https://github.com/relation-graph/relation-graph
  */
 
 /**
@@ -81,6 +81,26 @@ export type RGConnectTargetData = {
     offsetPercentX: number;
     offsetPercentY: number;
     targetData: Record<string, any>;
+};
+/**
+ * DOM rendering mode for <RGConnectTarget />
+ */
+export type RGConnectTargetDomMode = 'wrap' | 'contents';
+/**
+ * Registration options used internally by relation-graph to manage connect targets
+ * @inner
+ */
+export type RGRegisterConnectTargetOptions = {
+    hostEl: Element;
+    targetId: string;
+    targetType: string;
+    junctionPoint?: RGJunctionPoint;
+    targetData?: Record<string, any>;
+    triggerEl?: Element;
+    measureEl?: Element;
+    domMode?: RGConnectTargetDomMode;
+    measureSelector?: string;
+    strictMeasureTarget?: boolean;
 };
 /**
  * Resize handle positions for relation-graph
@@ -179,6 +199,7 @@ export type RGLineTarget = RGRectTarget & {
     id?: string // Like node.text
     text?: string; // Like node.text
     targetType: RGInnerConnectTargetType | string
+    junctionPoint?: RGJunctionPoint
     targetData?: Record<string, any>
     hidden?: boolean
 };
@@ -979,6 +1000,9 @@ export interface RGConnectTargetProps {
     className?: string;
     forSvg?: boolean;
     style?: Record<string, string | number | undefined>,
+    domMode?: RGConnectTargetDomMode;
+    measureSelector?: string;
+    strictMeasureTarget?: boolean;
 }
 
 /**

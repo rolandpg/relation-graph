@@ -1,5 +1,5 @@
-import { RGRectTarget } from 'packages/platforms/vue2/dd/types/packages/types';
-import { RGNode } from '../../types';
+import { RGNode, RGRectTarget } from '../../types';
+import { RGAnalyzeRenderedGraphOptions, RGAnalyzeRenderedGraphResult } from '../utils/RGClassAndRender';
 import { RelationGraphWith93Image } from './RelationGraphWith93Image';
 /**
  * Enhancement class for relation-graph component to interact with DOM, monitor changes in the view and elements within the view, and respond accordingly
@@ -8,6 +8,7 @@ export declare class RelationGraphWith95Dom extends RelationGraphWith93Image {
     protected resizeObserver: ResizeObserver;
     protected resizeListenerMap: WeakMap<object, any>;
     protected domToNodeIdMap: WeakMap<Element, string>;
+    protected connectTargetHostMutationObserverMap: Map<Element, MutationObserver>;
     private _trackpadGestureActive;
     private _trackpadGestureStartZoom;
     private _trackpadGestureAnchorView;
@@ -28,6 +29,17 @@ export declare class RelationGraphWith95Dom extends RelationGraphWith93Image {
      * @param relationGraphDom:HTMLDivElement canvas DOM
      */
     setCanvasDom(canvasDom: HTMLDivElement): void;
+    /**
+     * Analyze the currently rendered graph DOM and classify node styles, node render methods, and line styles.
+     * - This method only relies on the final DOM/CSS result, so it can capture styles from both data-driven configuration and external CSS overrides.
+     * - The returned nodes/lines also include merged JsonNode/JsonLine effective values based on the current graph options.
+     * - It is only valid when the graph is rendered with real DOM nodes/lines. In performance mode or easy-view mode it will return a degraded result.
+     */
+    analyzeRenderedGraph(options?: RGAnalyzeRenderedGraphOptions): Promise<RGAnalyzeRenderedGraphResult>;
+    /**
+     * @deprecated Use analyzeRenderedGraph instead.
+     */
+    getClassAndRender(options?: RGAnalyzeRenderedGraphOptions): Promise<RGAnalyzeRenderedGraphResult>;
     /**
      * @inner
      * @private
@@ -75,7 +87,15 @@ export declare class RelationGraphWith95Dom extends RelationGraphWith93Image {
      * @param callback
      * @protected
      */
-    protected addResizeListener(dom: HTMLElement, callback: (width: number, height: number) => void): void;
+    protected addResizeListener(dom: Element, callback: (width: number, height: number) => void): void;
+    protected _observeConnectTargetElement(targetId: string, runtime: {
+        hostEl: Element;
+        measureEl: Element;
+    }): void;
+    protected _unobserveConnectTargetElement(_targetId: string, runtime: {
+        hostEl: Element;
+        measureEl: Element;
+    }): void;
     /**
      * Node DOM resize event handler
      * @inner
@@ -113,7 +133,7 @@ export declare class RelationGraphWith95Dom extends RelationGraphWith93Image {
      * @param dom
      * @protected
      */
-    protected removeResizeListener(dom: HTMLElement): void;
+    protected removeResizeListener(dom: Element): void;
     /**
      * @inner
      * @protected

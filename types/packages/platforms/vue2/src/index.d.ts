@@ -1,7 +1,7 @@
 /**
 * relation-graph
 * Website: http://www.relation-graph.com/
-* Github: https://github.com/seeksdream/relation-graph
+* Github: https://github.com/relation-graph/relation-graph
 *
 */
 import { RelationGraphCore as _RelationGraphCore } from '../../../relation-graph-models/models/RelationGraphCore';
@@ -433,14 +433,26 @@ export declare const RGWatermark: import('vue').DefineComponent<{
         type: StringConstructor;
     };
 }>>, {
+    position: string;
     forImage: boolean;
     forDisplay: boolean;
-    position: string;
 }>;
-export declare const RGEditingNodeController: import('vue').DefineComponent<{}, unknown, {}, {
+export declare const RGEditingNodeController: import('vue').DefineComponent<{
+    hideBorderForSingleNode: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+}, {}, {}, {
     graphInstance(): any;
     options(): any;
-}, {}, import('vue/types/v3-component-options').ComponentOptionsMixin, import('vue/types/v3-component-options').ComponentOptionsMixin, {}, string, Readonly<import('vue').ExtractPropTypes<{}>>, {}>;
+}, {}, import('vue/types/v3-component-options').ComponentOptionsMixin, import('vue/types/v3-component-options').ComponentOptionsMixin, {}, string, Readonly<import('vue').ExtractPropTypes<{
+    hideBorderForSingleNode: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+}>>, {
+    hideBorderForSingleNode: boolean;
+}>;
 export declare const RGEditingResize: import('vue').DefineComponent<{
     disableResizeWidth: {
         type: BooleanConstructor;
@@ -605,12 +617,30 @@ export declare const RGConnectTarget: import('vue').DefineComponent<{
         mustUseProp: boolean;
         type: BooleanConstructor;
     };
+    domMode: {
+        mustUseProp: boolean;
+        type: () => import('../../../types').RGConnectTargetDomMode;
+    };
+    measureSelector: {
+        mustUseProp: boolean;
+        type: StringConstructor;
+    };
+    strictMeasureTarget: {
+        mustUseProp: boolean;
+        type: BooleanConstructor;
+    };
 }, {}, {}, {
     RGInnerConnectTargetType(): typeof import('../../../types').RGInnerConnectTargetType;
     RGJunctionPoint(): typeof import('../../../types').RGJunctionPoint;
     graphInstance(): any;
     options(): any;
+    actualJunctionPoint(): string;
+    normalizedDomMode(): import('../../../types').RGConnectTargetDomMode;
+    resolvedHostStyle(): string | (string | {
+        display: string;
+    })[];
 }, {
+    registerCurrentTarget(): void;
     onClick($event: any): void;
     onMouseDown($event: any): void;
     onMouseUp(type: any, $event: any): void;
@@ -648,11 +678,24 @@ export declare const RGConnectTarget: import('vue').DefineComponent<{
         mustUseProp: boolean;
         type: BooleanConstructor;
     };
+    domMode: {
+        mustUseProp: boolean;
+        type: () => import('../../../types').RGConnectTargetDomMode;
+    };
+    measureSelector: {
+        mustUseProp: boolean;
+        type: StringConstructor;
+    };
+    strictMeasureTarget: {
+        mustUseProp: boolean;
+        type: BooleanConstructor;
+    };
 }>>, {
     disableDrag: boolean;
     junctionPoint: string;
-    disableDrop: boolean;
+    strictMeasureTarget: boolean;
     forSvg: boolean;
+    disableDrop: boolean;
 }>;
 export declare const RGEditingConnectPoints: import('vue').DefineComponent<{
     mouseUpOnJunctionPoint: {
@@ -748,9 +791,9 @@ export declare const RelationLinker: import('vue').DefineComponent<{
         type: FunctionConstructor;
     };
 }>>, {
+    lines: unknown[];
     options: Record<string, any>;
     relationGraphCore: Function;
-    lines: unknown[];
 }>;
 export declare const RelationGraph: import('vue').DefineComponent<{
     options: {

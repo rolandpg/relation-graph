@@ -1,5 +1,7 @@
 import { JsonLine, JsonNode, RGJsonData, RGLine, RGLink, RGNode, RGOptions, RGRectTarget } from '../../types';
 import { RelationGraphWith95Dom } from './RelationGraphWith95Dom';
+import { RGTransNodeToJsonOptions } from '../data/RGNodeDataUtils';
+import { RGTransLineToJsonOptions } from '../data/RGLineDataUtils';
 /**
  * Additional API methods provided by the relation-graph component
  */
@@ -84,17 +86,17 @@ export declare class RelationGraphWith99API extends RelationGraphWith95Dom {
      * Convert an RGNode object to a JSON-serializable object
      * @param nodeJson: JsonNode
      */
-    transRGNodeToJsonObject(node: RGNode): JsonNode;
+    transRGNodeToJsonObject(node: RGNode, options?: RGTransNodeToJsonOptions): JsonNode;
     /**
      * Convert an RGLink object to a JSON-serializable object
      * @param lines: JsonLine
      */
-    transRGLinkToJsonObject(link: RGLink): JsonLine;
+    transRGLinkToJsonObject(link: RGLink, options?: RGTransLineToJsonOptions): JsonLine;
     /**
      * Convert an RGLine object to a JSON-serializable object
      * @param lineJson: JsonLine
      */
-    transRGLineToJsonObject(line: RGLine): JsonLine;
+    transRGLineToJsonObject(line: RGLine, options?: RGTransLineToJsonOptions): JsonLine;
     /**
      * Get the configuration information of the current graph
      */

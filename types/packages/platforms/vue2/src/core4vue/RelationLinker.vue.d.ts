@@ -39,8 +39,8 @@ declare const _default: import('vue').DefineComponent<{
         type: FunctionConstructor;
     };
 }>>, {
+    lines: unknown[];
     options: Record<string, any>;
     relationGraphCore: Function;
-    lines: unknown[];
 }>;
 export default _default;

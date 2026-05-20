@@ -16,11 +16,15 @@ export declare class RelationGraphWith6Layout extends RelationGraphWith6Effect {
     private _layoutTimer;
     private _layoutPromise;
     private _layoutResolve;
+    private _layoutReject;
     /**
-     * @inner
-     * @private
+     * Immediately assign positions to the nodes in the current graph based on the layout configuration set in the options
+     * - By default, the first node in the graph is used as the root node for layout. You can also specify a custom root node by passing a node object or node id as a parameter.
+     * - Unlike doLayout, this method directly performs the layout logic without the outer scheduling, merge, or delay handling.
+     * @param customRootNode Optional, specify a custom root node for layout, can be a node object or node id
+     * @return Promise<void>
      */
-    private _doLayout;
+    _doLayout(customRootNode?: RGNode | string): Promise<void>;
     /**
      * @inner
      * @protected

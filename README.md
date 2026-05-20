@@ -1,3 +1,4 @@
+
 relation-graph v3.x has now been released, with support for more platforms while keeping the code cleaner and more elegant. View the architecture here:
 
 [https://relation-graph.com/docs/multi-platform-architecture](https://relation-graph.com/docs/multi-platform-architecture)
@@ -7,7 +8,6 @@ At the same time, Relation Graph’s structure is naturally LLM-friendly. Becaus
 `<source-code-root>/knowledge-for-ai`
 
 ---
-
 <img src="https://www.relation-graph.com/github-doc-images/relation-graph-yellow-small.png" width="60" />
 
 # relation-graph
@@ -251,21 +251,25 @@ export default CustomNode;
 
 ### Example Projects
 
+- The complete Vue2 sample project:
+- https://github.com/relation-graph/relation-graph-startup-for-vue2
+- [Run the complete Vue2 sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-vue2/main)
+
+- The complete Vue3 sample project:
+- https://github.com/relation-graph/relation-graph-startup-for-vue3
+- [Run the complete Vue3 sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-vue3/main)
 
 - The complete React sample project:
-- https://github.com/relation-graph/relation-graph-vue2-project-example
--
-- The complete Vue3 sample project:
-- https://github.com/relation-graph/relation-graph-react-project-example
-
-- The complete Vue2 sample project:
-- https://github.com/relation-graph/relation-graph-vue3-project-example
+- https://github.com/relation-graph/relation-graph-startup-for-react
+- [Run the complete React sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-react/main)
 
 - The complete Svelte sample project:
-- https://github.com/relation-graph/relation-graph-svelte-project-example
+- https://github.com/relation-graph/relation-graph-startup-for-svelte
+- [Run the complete Svelte sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-svelte/main)
 
 - The complete Web Components sample project:
-- https://github.com/relation-graph/relation-graph-webcomponents-project-example
+- https://github.com/relation-graph/relation-graph-startup-for-web-component
+- [Run the complete Web Components sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-web-component/main)
 
 
 ### More Examples
@@ -282,19 +286,29 @@ export default CustomNode;
 ![event](https://www.relation-graph.com/demo-images/adv-effect2.gif)
 ![animation](https://www.relation-graph.com/demo-images/expand-animation.gif)
 ![event-commbo](https://www.relation-graph.com/demo-images/open-all-close-all.gif)
-![switch-layout](https://www.relation-graph.com/demo-images/before-change-layout.gif)
+![switch-layout](https://www.relation-graph.com/
 
 ### The complete sample project
 
-- The complete Vue2 sample project：
-- [https://github.com/relation-graph/relation-graph-vue2-project-example(Vite)](https://github.com/seeksdream/relation-graph-vue2-demo)
-- [https://github.com/relation-graph/relation-graph-vue2-project-example(Webpack)](https://github.com/seeksdream/relation-graph-webpack)
+- The complete Vue2 sample project:
+- https://github.com/relation-graph/relation-graph-startup-for-vue2
+- [Run the complete Vue2 sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-vue2/main)
 
-- The complete Vue3 sample project：
-- https://github.com/relation-graph/relation-graph-vue3-project-example
+- The complete Vue3 sample project:
+- https://github.com/relation-graph/relation-graph-startup-for-vue3
+- [Run the complete Vue3 sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-vue3/main)
 
-- The complete React sample project：
-- https://github.com/relation-graph/relation-graph-react-project-example
+- The complete React sample project:
+- https://github.com/relation-graph/relation-graph-startup-for-react
+- [Run the complete React sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-react/main)
+
+- The complete Svelte sample project:
+- https://github.com/relation-graph/relation-graph-startup-for-svelte
+- [Run the complete Svelte sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-svelte/main)
+
+- The complete Web Components sample project:
+- https://github.com/relation-graph/relation-graph-startup-for-web-component
+- [Run the complete Web Components sample project online](https://codesandbox.io/p/github/relation-graph/relation-graph-startup-for-web-component/main)
 
 
 ### More info

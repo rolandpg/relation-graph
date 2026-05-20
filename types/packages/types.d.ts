@@ -1,7 +1,7 @@
 /**
  * relation-graph
  * Website: http://www.relation-graph.com/
- * Github: https://github.com/seeksdream/relation-graph
+ * Github: https://github.com/relation-graph/relation-graph
  */
 
 /**

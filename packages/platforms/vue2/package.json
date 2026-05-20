@@ -27,7 +27,7 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/seeksdream/relation-graph"
+    "url": "https://github.com/relation-graph/relation-graph"
   },
   "homepage": "http://relation-graph.com",
   "keywords": [
@@ -42,7 +42,7 @@
     "vue图谱组件"
   ],
   "bugs": {
-    "url": "https://github.com/seeksdream/relation-graph/issues"
+    "url": "https://github.com/relation-graph/relation-graph/issues"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.2.0",
