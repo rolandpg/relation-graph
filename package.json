@@ -1,7 +1,7 @@
 {
     "name": "relation-graph",
-    "version": "3.0.12",
-    "description": "relation-graph，支持 React、Vue3、Vue2、Svelte、Web Components 等多平台。关联关系图谱组件，可以展示如组织机构图谱、股权架构图谱、集团关系图谱等知识图谱，可提供多种图谱布局，包括树状布局、中心布局、力学布局自动布局等。Vue/React/Svelte component for relationship graph , which can display knowledge graphs, such as organization graph, equity structure graph, group relationship graph, etc.",
+    "version": "3.0.13",
+    "description": "Vue/React/Svelte component for relationship graph , which can display knowledge graphs, such as organization graph, equity structure graph, group relationship graph, etc.",
     "scripts": {
         "build-all": "sh ./build-all.sh"
     },
@@ -26,15 +26,10 @@
         "uml",
         "er diagram",
         "component",
-        "关系图谱",
-        "知识图谱",
-        "图谱编辑器",
-        "流程图",
-        "网络拓扑",
-        "数据可视化"
+        "relation data visualization"
     ],
     "bugs": {
-        "url": "https://github.com/seeksdream/relation-graph/issues"
+        "url": "https://github.com/relation-graph/relation-graph/issues"
     },
     "dependencies": {
     },

@@ -26,7 +26,7 @@ const banner = `/*!
  * ${pkg.name} v${pkg.version}
  * (c) ${new Date().getFullYear()} ${pkg.author}
  * Released under the ${pkg.license} License.
- * Repository: https://github.com/seeksdream/relation-graph
+ * Repository: https://github.com/relation-graph/relation-graph
  */`;
 const externalDeps = [
   'react',

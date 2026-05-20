@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>relation-graph Web Component Demo</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            padding: 0;
+        }
+        header {
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        relation-graph {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+<header style="height: 100px;padding:20px;">
+    <h1>relation-graph Web Component Demo</h1>
+    <p>构建 web component 后，直接在任何 HTML 页面中使用 &lt;relation-graph&gt;。</p>
+</header>
+<main style="height: calc(100vh - 145px);overflow: hidden;">
+    <relation-graph id="rg-demo">
+        <div slot="view" style="position: relative;width: 100%; height: 100%;pointer-events: none;">
+            <div style="position:absolute;top:12px;right:12px;background-color: red;width: fit-content;height: fit-content;">
+                自定义 view 插槽
+            </div>
+            <rg-editing-node-controller>
+                <rg-editing-resize></rg-editing-resize>
+                <rg-editing-node-widget position="right">
+                    Top Widget
+                </rg-editing-node-widget>
+            </rg-editing-node-controller>
+            <rg-editing-reference-line show-text="false"></rg-editing-reference-line>
+            <rg-editing-connect-controller></rg-editing-connect-controller>
+            <rg-editing-line-controller text-editable="false" path-editable="false"></rg-editing-line-controller>
+            <rg-mini-view style="width:300px;height:100px; top:unset;left: 10px;bottom:10px;right: unset;background-color: #0f172a;"></rg-mini-view>
+        </div>
+        <div slot="canvas">
+            <strong>Tips</strong>
+            <p style="margin:4px 0 0;font-size:12px;">通过 slot="canvas" 注入自定义画布元素。</p>
+            11111<rg-connect-target targetId="abddd">xxxxx</rg-connect-target>2222
+        </div>
+    </relation-graph>
+</main>
+
+<script type="module">
+    import {RGHooks} from '../../../../lib/web-components/relation-graph.mjs';
+    import {getDemoData4TreeMapData2} from './demo-data-sets/treemap2.js';
+    // 确保先运行 `yarn build-wc` 生成 UMD 资源
+    const rgElement = document.getElementById('rg-demo');
+    let graphInstance;
+    rgElement.addEventListener('onReady', (event) => {
+        console.error('[relation-graph] onReady:', event.detail);
+        graphInstance = event.detail[0];
+        const jsonData = getDemoData4TreeMapData2();
+        // graphInstance.setJsonData(jsonData);
+        graphInstance.setJsonData(initialData);
+        graphInstance.moveToCenter();
+        graphInstance.zoomToFit();
+    });
+    rgElement.renderNode = (node) => `
+  <div style="padding:10px;">
+      <div style="padding:6px 10px;border-radius:8px;color:#666;">
+        <strong>N：${node.text}</strong><br/>
+        <small>ID: ${node.id}</small>
+      </div>
+  </div>
+`;
+    rgElement.options = {
+        debug: false,
+        backgroundColor: '#0f172a',
+        defaultLineColor: '#60a5fa',
+        defaultLineShape: 44,
+        defaultJunctionPoint: 'lr',
+        showToolBar: true,
+        performanceMode: true,
+        layout: {
+            // layoutName: 'fixed'
+            layoutName: 'tree'
+        }
+    };
+    const initialData = {
+        rootId: 'node-a',
+        nodes: [
+            { id: 'node-a', text: 'Alpha', color: '#34d399' },
+            { id: 'node-b', text: 'Beta', color: '#f472b6' },
+            { id: 'node-c', text: 'Gamma', color: '#facc15' },
+        ],
+        lines: [
+            { from: 'node-a', to: 'node-b', text: 'A → B' },
+            { from: 'node-b', to: 'node-c', text: 'B → C' },
+            { from: 'node-b', to: 'node-c', text: 'B → C', lineShape: 44 },
+            { from: 'node-c', to: 'node-a', text: 'C → A' },
+        ],
+    };
+    // 传入初始数据
+    rgElement.initialData = initialData;
+
+    rgElement.addEventListener('onNodeClick', (event) => {
+        const [node, nativeEvent] = event.detail;
+        console.log('[relation-graph] node click:', rgElement, node?.id, nativeEvent?.type);
+        graphInstance.setEditingNodes([node]);
+    });
+    rgElement.addEventListener('onNodeDragStart', (event) => {
+        console.log('[relation-graph] onNodeDragStart:', event.detail);
+    });
+    rgElement.addEventListener('onLineClick', (event) => {
+        const [line] = event.detail;
+        console.log('[relation-graph] line click:', event.detail);
+        graphInstance.setEditingLine(line);
+    });
+    rgElement.addEventListener('onCanvasClick', (event) => {
+        graphInstance.setEditingNodes([]);
+        graphInstance.setEditingLine(null);
+        graphInstance.clearChecked();
+    });
+    rgElement.addEventListener('onStoreChange', (event) => {
+        console.log('[relation-graph] onStoreChange:', event.detail);
+    });
+</script>
+</body>
+</html>

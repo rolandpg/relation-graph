@@ -9,6 +9,7 @@ import { RelationGraphWith6Layout } from './RelationGraphWith6Layout';
  */
 export declare class RelationGraphWith7Event extends RelationGraphWith6Layout {
     constructor();
+    protected draggingSelectedNodes(_draggedNode: RGNode, _newX: number, _newY: number, _buff_x: number, _buff_y: number): void;
     private _prevClickNodeTime;
     /**
      * Triggered when the user clicks on a node
@@ -81,7 +82,7 @@ export declare class RelationGraphWith7Event extends RelationGraphWith6Layout {
      * @inner
      * @private
      */
-    private onCanvasDragEnd;
+    protected onCanvasDragEnd(e: RGUserEvent): void;
     /**
      * User clicks on the canvas
      * @param e
@@ -146,7 +147,7 @@ export declare class RelationGraphWith7Event extends RelationGraphWith6Layout {
      * @returns Return true to prevent the line from being created.
      * @protected
      */
-    protected onReadyToCreateLine(from: RGNode, to: RGNode | RGPosition): false | RGCoordinate | undefined;
+    protected onReadyToCreateLine(from: RGNode | RGLineTarget | RGPosition, to: RGNode | RGLineTarget | RGPosition): false | RGCoordinate | undefined;
     /**
      * User right-click context menu event
      * - Finally, you can get this event through the onContextmenu event, and you can get the position where the user right-clicked and the type of object clicked (canvas | line | node) and the object through this event.

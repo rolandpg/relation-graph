@@ -51,8 +51,8 @@ declare const _default: import('vue').DefineComponent<{
         type: StringConstructor;
     };
 }>>, {
+    position: string;
     forImage: boolean;
     forDisplay: boolean;
-    position: string;
 }>;
 export default _default;

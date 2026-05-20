@@ -1,4 +1,4 @@
-import { RGInnerConnectTargetType, RGJunctionPoint } from '../../../../../types';
+import { RGConnectTargetDomMode, RGInnerConnectTargetType, RGJunctionPoint } from '../../../../../types';
 declare const _default: import('vue').DefineComponent<{
     junctionPoint: {
         mustUseProp: boolean;
@@ -33,12 +33,30 @@ declare const _default: import('vue').DefineComponent<{
         mustUseProp: boolean;
         type: BooleanConstructor;
     };
+    domMode: {
+        mustUseProp: boolean;
+        type: () => RGConnectTargetDomMode;
+    };
+    measureSelector: {
+        mustUseProp: boolean;
+        type: StringConstructor;
+    };
+    strictMeasureTarget: {
+        mustUseProp: boolean;
+        type: BooleanConstructor;
+    };
 }, {}, {}, {
     RGInnerConnectTargetType(): typeof RGInnerConnectTargetType;
     RGJunctionPoint(): typeof RGJunctionPoint;
     graphInstance(): any;
     options(): any;
+    actualJunctionPoint(): string;
+    normalizedDomMode(): RGConnectTargetDomMode;
+    resolvedHostStyle(): string | (string | {
+        display: string;
+    })[];
 }, {
+    registerCurrentTarget(): void;
     onClick($event: any): void;
     onMouseDown($event: any): void;
     onMouseUp(type: any, $event: any): void;
@@ -76,10 +94,23 @@ declare const _default: import('vue').DefineComponent<{
         mustUseProp: boolean;
         type: BooleanConstructor;
     };
+    domMode: {
+        mustUseProp: boolean;
+        type: () => RGConnectTargetDomMode;
+    };
+    measureSelector: {
+        mustUseProp: boolean;
+        type: StringConstructor;
+    };
+    strictMeasureTarget: {
+        mustUseProp: boolean;
+        type: BooleanConstructor;
+    };
 }>>, {
     disableDrag: boolean;
     junctionPoint: string;
-    disableDrop: boolean;
+    strictMeasureTarget: boolean;
     forSvg: boolean;
+    disableDrop: boolean;
 }>;
 export default _default;

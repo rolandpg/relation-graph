@@ -1,3 +1,3 @@
-import { default as React } from 'react';
-declare const RGDebugView: React.FC;
+import { default as React, PropsWithChildren } from 'react';
+declare const RGDebugView: React.FC<PropsWithChildren<{}>>;
 export default RGDebugView;

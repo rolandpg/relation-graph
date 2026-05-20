@@ -1,10 +1,26 @@
-import { RGFakeLine, RGFakeLineTargetRender, RGGenerateLineConfig, RGLine, RGLineTarget, RGOptionsFull } from '../../types';
+import { RGJunctionPoint, JsonLineLike, RGFakeLine, RGFakeLineTargetRender, RGGenerateLineConfig, RGLine, RGLineTarget, RGOptionsFull } from '../../types';
 import { RelationGraphWith2Data4ConnectTarget } from './RelationGraphWith2Data4ConnectTarget';
+type ResolveTargetRectOptions = {
+    preferLiveTarget?: boolean;
+    connectTargetEl?: Element;
+};
+type ResolvedConnectTargetDescriptor = {
+    targetId: string;
+    targetType: string;
+    junctionPoint: RGJunctionPoint;
+    connectTargetEl: Element;
+    hostEl: Element;
+    measureEl: Element;
+    triggerEl: Element;
+};
 /**
  * API class for generating line configuration and line connection point information in relation-graph component, providing data support for drawing lines
  */
 export declare class RelationGraphWith2Data5LineConfig extends RelationGraphWith2Data4ConnectTarget {
     constructor();
+    private resolvedTargetCache;
+    protected _beforeViewDataUpdated(): void;
+    protected resolveTargetDescriptorByElement(targetEl: Element): ResolvedConnectTargetDescriptor | undefined;
     /**
      * @inner
      */
@@ -31,5 +47,7 @@ export declare class RelationGraphWith2Data5LineConfig extends RelationGraphWith
      * @param targetId
      * @param fakeLine
      */
-    getFakeLineTarget(targetType: string, targetId: string, fakeLine: RGFakeLine): RGLineTarget | undefined;
+    protected resolveTargetRect(targetType: string, targetId: string, lineContext: JsonLineLike, options?: ResolveTargetRectOptions): RGLineTarget | undefined;
+    getFakeLineTarget(targetType: string, targetId: string, lineContext: JsonLineLike, options?: ResolveTargetRectOptions): RGLineTarget | undefined;
 }
+export {};

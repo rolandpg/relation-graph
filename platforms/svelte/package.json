@@ -1,6 +1,6 @@
 {
   "name": "@relation-graph/svelte",
-  "version": "3.0.12",
+  "version": "3.0.13",
   "description": "Svelte relationship graph component for visualizing knowledge graphs, network topologies, and complex hierarchies. Lightweight and powerful, supporting force layouts, tree layouts, and interactive editing in Svelte projects.",
   "main": "./relation-graph.cjs",
   "module": "./relation-graph.mjs",
@@ -22,7 +22,7 @@
     "type": "git",
     "url": "git+https://github.com/relation-graph/relation-graph.git"
   },
-  "homepage": "https://relation-graph.com",
+  "homepage": "http://relation-graph.com",
   "keywords": [
     "relation-graph react version",
     "react relationship graph",
@@ -41,7 +41,7 @@
     "react 图谱编辑器",
     "react 流程图",
     "react 网络拓扑",
-    "react 数据可视化"
+    "react relation data visualization"
   ],
   "bugs": {
     "url": "https://github.com/relation-graph/relation-graph/issues"

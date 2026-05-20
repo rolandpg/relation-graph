@@ -11,7 +11,7 @@
   ],
   "homepage": "https://relation-graph.com/",
   "bugs": {
-    "url": "https://github.com/seeksdream/relation-graph-vue3/issues"
+    "url": "https://github.com/relation-graph/relation-graph-vue3/issues"
   },
   "license": "MIT",
   "main": "dist/relation-graph.js",
@@ -35,7 +35,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/seeksdream/relation-graph-vue3.git"
+    "url": "git+https://github.com/relation-graph/relation-graph-vue3.git"
   },
   "publishConfig": {
     "access": "public"

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三国人物关系图</title>
+    <script type="module">
+        import { RGProvider, RelationGraph } from '../../../../lib/web-components/relation-graph.mjs';
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('relation-graph-container');
+            const nodes = [
+                { id: '1', label: '刘备' },
+                { id: '2', label: '关羽' },
+                { id: '3', label: '张飞' },
+                { id: '4', label: '诸葛亮' },
+                { id: '5', label: '曹操' },
+                { id: '6', label: '孙权' },
+                { id: '7', label: '周瑜' },
+                { id: '8', label: '黄忠' },
+                { id: '9', label: '赵云' },
+                { id: '10', label: '马超' },
+                { id: '11', label: '吕布' },
+                { id: '12', label: '貂蝉' },
+                { id: '13', label: '董卓' },
+                { id: '14', label: '袁绍' },
+                { id: '15', label: '司马懿' },
+                { id: '16', label: '庞统' },
+                { id: '17', label: '孙尚香' },
+                { id: '18', label: '甘宁' },
+                { id: '19', label: '魏延' },
+                { id: '20', label: '徐庶' }
+            ];
+            const links = [
+                { source: '1', target: '2' },
+                { source: '1', target: '3' },
+                { source: '1', target: '4' },
+                { source: '5', target: '6' },
+                { source: '6', target: '7' },
+                { source: '8', target: '9' },
+                { source: '10', target: '11' },
+                { source: '12', target: '13' },
+                { source: '14', target: '15' },
+                { source: '16', target: '17' },
+                { source: '18', target: '19' },
+                { source: '20', target: '1' }
+            ];
+            const config = {
+                layout: {
+                    layoutName: 'force',
+                    maxLayoutTimes: 300,
+                    byNode: true,
+                    byLine: true
+                }
+            };
+            const graphInstance = new RelationGraph({
+                container,
+                nodes,
+                links,
+                config
+            });
+            graphInstance.render();
+        });
+    </script>
+    <style>
+        #relation-graph-container {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+<div id="relation-graph-container"></div>
+</body>
+</html>

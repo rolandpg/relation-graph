@@ -1,6 +1,6 @@
 {
   "name": "@relation-graph/vue2",
-  "version": "3.0.12",
+  "version": "3.0.13",
   "description": "Vue2 relationship graph component for visualizing and editing knowledge graphs, org charts, and equity structures. force-directed layouts, tree layouts, and interactive graph editing.",
   "main": "./relation-graph.umd.js",
   "module": "./relation-graph.mjs",
@@ -22,7 +22,7 @@
     "type": "git",
     "url": "git+https://github.com/relation-graph/relation-graph.git"
   },
-  "homepage": "https://relation-graph.com",
+  "homepage": "http://relation-graph.com",
   "keywords": [
     "relation-graph vue2 version",
     "vue2 relationship graph",
@@ -41,7 +41,7 @@
     "vue2 图谱编辑器",
     "vue2 流程图",
     "vue2 网络拓扑",
-    "vue2 数据可视化"
+    "vue2 relation data visualization"
   ],
   "bugs": {
     "url": "https://github.com/relation-graph/relation-graph/issues"

@@ -143,34 +143,37 @@ export declare const RGUtils: {
         onNodeDragend(e: MouseEvent | TouchEvent): void;
     };
 };
-export declare const RGFakeNode: import('react').FC<{
+export declare const RGFakeNode: import('react').FC<import('react').PropsWithChildren<{
     node: import('../../../types').RGNode;
-}>;
-export declare const RGLinePath: import('react').FC<import('../../../types').RGLinePathProps & {
+}>>;
+export declare const RGLinePath: import('react').FC<import('react').PropsWithChildren<import('../../../types').RGLinePathProps & {
     onLineClick: (e: React.MouseEvent | React.TouchEvent) => void;
-    children?: React.ReactNode;
+}>>;
+export declare const RGLineText: import('react').FC<import('react').PropsWithChildren<import('../../../types').RGLineTextProps>>;
+export declare const RGDebugView: import('react').FC<{
+    children?: import('react').ReactNode | undefined;
 }>;
-export declare const RGLineText: import('react').FC<import('../../../types').RGLineTextProps & {
-    children?: React.ReactNode;
-}>;
-export declare const RGDebugView: import('react').FC<{}>;
-export declare const RGToolBar: import('react').FC<import('../../../types').RGToolBarProps>;
+export declare const RGToolBar: import('react').FC<import('react').PropsWithChildren<import('../../../types').RGToolBarProps>>;
 export declare const RGNodeExpandHolder: import('react').FC<import('./types-react').RGNodeExpandHolderProps>;
-export declare const RGMiniToolBar: import('react').FC<import('../../../types').RGToolBarProps>;
+export declare const RGMiniToolBar: import('react').FC<import('react').PropsWithChildren<import('../../../types').RGToolBarProps>>;
 export declare const RGMiniView: import('react').FC<import('../../../types').RGMiniViewProps>;
-export declare const RGBackground: import('react').FC<import('../../../types').RGBackgroundProps>;
-export declare const RGWatermark: import('react').FC<import('../../../types').RGWatermarkProps>;
-export declare const RGEditingNodeController: import('react').FC<{}>;
+export declare const RGBackground: import('react').FC<import('react').PropsWithChildren<import('../../../types').RGBackgroundProps>>;
+export declare const RGWatermark: import('react').FC<import('react').PropsWithChildren<import('../../../types').RGWatermarkProps>>;
+export declare const RGEditingNodeController: import('react').FC<import('react').PropsWithChildren<{
+    hideBorderForSingleNode?: boolean;
+}>>;
 export declare const RGEditingResize: import('react').FC<{
     disableResizeWidth?: boolean;
     disableResizeHeight?: boolean;
     beforeResizeStart?: () => void;
 }>;
-export declare const RGEditingNearNodeWidget: import('react').FC<import('../../../types').RGWidgetProps>;
-export declare const RGEditingLineController: import('react').FC<import('../../../types').RGEditingLineControllerProps>;
-export declare const RGEditingConnectController: import('react').FC<{}>;
-export declare const RGConnectSource: import('react').FC<import('../../../types').RGConnectSourceProps>;
-export declare const RGConnectTarget: import('react').FC<import('../../../types').RGConnectTargetProps>;
+export declare const RGEditingNearNodeWidget: import('react').FC<import('react').PropsWithChildren<import('../../../types').RGWidgetProps>>;
+export declare const RGEditingLineController: import('react').FC<import('react').PropsWithChildren<import('../../../types').RGEditingLineControllerProps>>;
+export declare const RGEditingConnectController: import('react').FC<{
+    children?: import('react').ReactNode | undefined;
+}>;
+export declare const RGConnectSource: import('react').FC<import('react').PropsWithChildren<import('../../../types').RGConnectSourceProps>>;
+export declare const RGConnectTarget: import('react').FC<import('react').PropsWithChildren<import('../../../types').RGConnectTargetProps>>;
 export declare const RGEditingConnectPoints: import('react').FC<{
     mouseUpOnJunctionPointWithOffset: (junctionPoint: import('../../../types').RGJunctionPoint, event: any) => void;
     mouseUpOnJunctionPoint: (junctionPoint: import('../../../types').RGJunctionPoint, event: any) => void;
@@ -179,10 +182,18 @@ export declare const RGEditingReferenceLine: import('react').FC<{
     showText?: boolean;
     adsorption?: boolean;
 }>;
-export declare const RGSlotOnGraph: import('react').FC<{}>;
-export declare const RGSlotOnView: import('react').FC<{}>;
-export declare const RGSlotOnCanvasAbove: import('react').FC<{}>;
-export declare const RGSlotOnCanvas: import('react').FC<{}>;
+export declare const RGSlotOnGraph: import('react').FC<{
+    children?: import('react').ReactNode | undefined;
+}>;
+export declare const RGSlotOnView: import('react').FC<{
+    children?: import('react').ReactNode | undefined;
+}>;
+export declare const RGSlotOnCanvasAbove: import('react').FC<{
+    children?: import('react').ReactNode | undefined;
+}>;
+export declare const RGSlotOnCanvas: import('react').FC<{
+    children?: import('react').ReactNode | undefined;
+}>;
 export declare const RGSlotOnNode: import('react').FC<{
     children: (props: import('../../../types').RGNodeSlotProps) => React.ReactNode;
 }>;

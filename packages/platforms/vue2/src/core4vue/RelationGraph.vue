@@ -130,7 +130,7 @@ export default {
         if (Vue.version.slice(0, 4) === '2.5.') slotAlert = true;
         if (Vue.version.slice(0, 4) === '2.6.' && Number.parseInt(Vue.version.split('.')[2]) <= 12) slotAlert = true;
         if (slotAlert) {
-            console.error(`您的Vue版本：${Vue.version}注意：当你使用的vue版本等于低于2.6.12时，图谱会显示不正常，参考这个连接解决这个问题：https://github.com/seeksdream/relation-graph/issues/113`);
+            console.error(`您的Vue版本：${Vue.version}注意：当你使用的vue版本等于低于2.6.12时，图谱会显示不正常，参考这个连接解决这个问题：https://github.com/relation-graph/relation-graph/issues/113`);
         }
         // const propsListeners = getEventListeners(this);
         // if (Object.values(propsListeners).filter(fn => !!fn).length > 0) {

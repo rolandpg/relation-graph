@@ -1,6 +1,6 @@
-import { default as React } from 'react';
+import { default as React, PropsWithChildren } from 'react';
 import { RGGenerateLineConfig } from '../../../../../../../types';
-declare const RGSlotOnLineText: React.FC<{
+declare const RGSlotOnLineText: React.FC<PropsWithChildren<{
     lineConfig: RGGenerateLineConfig;
-}>;
+}>>;
 export default RGSlotOnLineText;

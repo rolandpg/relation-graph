@@ -43,7 +43,7 @@
   "settings": {
     "import/parsers": {
       "@typescript-eslint/parser": [".ts", ".tsx"],
-      "@vue-eslint-parser/parser": [".vue", ".svelte"]
+      "@vue-eslint-parser/parser": [".vue"]
     },
     "vue": {
       "version": "detect"
@@ -51,7 +51,7 @@
   },
   "parserOptions": {
     "parser": "@typescript-eslint/parser",
-    "extraFileExtensions": [".vue", ".svelte"]],
+    "extraFileExtensions": [".vue"],
     // Allows for the parsing of modern ECMAScript features xxx
     "ecmaVersion": 2018,
     "ecmaFeatures": {

@@ -5,10 +5,11 @@ import { RGDataProvider } from '../data/RGDataProvider';
  */
 export declare class RelationGraphBase {
     listeners: RGListeners;
-    private useReactiveDataToAutoUpdateView;
+    protected useReactiveDataToAutoUpdateView: boolean;
     protected instanceId: string;
     dataProvider: RGDataProvider;
     options: RGOptionsFull;
+    protected _previousUpdateTime: number;
     constructor();
     /**
      * Generate a highly likely unique id, the probability of non-duplication depends on the parameter idLength (the length of the id)
@@ -26,6 +27,12 @@ export declare class RelationGraphBase {
      * @protected
      */
     protected _dataUpdated(): void;
+    protected _beforeViewDataUpdated(): void;
+    protected _updateEditingControllerView(): void;
+    protected _updateEditingConnectControllerView(): void;
+    protected updateShouldRenderGraphData(_force?: boolean): void;
+    protected updateEasyView(): void;
+    protected updateMiniView(): void;
     private _dataUpdatedRequested;
     /**
      * @inner

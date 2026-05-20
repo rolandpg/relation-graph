@@ -15,6 +15,7 @@ export declare class RelationGraphWith9EasyView extends RelationGraphWith7Event 
      * @private
      */
     setEasyViewCanvas(canvas: HTMLCanvasElement): void;
+    protected updateMiniView(): void;
     /**
      * relation-graph internal call, please do not use externally
      * @inner
