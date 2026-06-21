@@ -279,8 +279,10 @@ export const generateNewUUID = (idLength = 5) => {
     const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let uuid = '';
     const maxLength = idLength > 30 ? 30 : idLength;
+    // Use a CSPRNG instead of Math.random() so generated ids are not predictable (CWE-338).
+    const randoms = globalThis.crypto.getRandomValues(new Uint32Array(maxLength));
     for (let i = 0; i < maxLength; i++) {
-        uuid += chars[Math.floor(Math.random() * chars.length)];
+        uuid += chars[Math.floor(randoms[i] * Math.pow(2, -32) * chars.length)];
     }
     return uuid;
 }
