@@ -31,7 +31,8 @@ const banner = `/*!
 const externalDeps = [
   'react',
   'react-dom',
-  'react/jsx-runtime'
+  'react/jsx-runtime',
+  'node:crypto'
 ];
 
 export default defineConfig({

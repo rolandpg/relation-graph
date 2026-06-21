@@ -93,7 +93,7 @@ export default defineConfig({
     outDir: outputDir,
     emptyOutDir: false,
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue', 'node:crypto'],
       output: {
         format: 'es',
         entryFileNames: 'relation-graph.ssr.mjs',
