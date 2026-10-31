@@ -52,7 +52,7 @@
     },
     "devDependencies": {
         "@sveltejs/adapter-auto": "^7.0.0",
-        "@sveltejs/kit": "^2.5.0",
+        "@sveltejs/kit": "^3.1.1",
         "@sveltejs/package": "^2.3.2",
         "@sveltejs/vite-plugin-svelte": "^3.1.2",
         "sass-embedded": "^1.93.3",
